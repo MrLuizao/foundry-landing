@@ -1,0 +1,67 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink: #000000;
+  --color-panel: #101010;
+  --color-line: #262626;
+  --color-paper: #f1e8d6;
+  --color-accent: #ff7a1a;
+  --font-display: "JetBrains Mono", ui-monospace, monospace;
+  --font-serif: "Fraunces", Georgia, serif;
+  --font-sans: "Inter", system-ui, sans-serif;
+  --radius-card: 1.75rem;
+}
+
+html {
+  background: var(--color-ink);
+  color: #fff;
+  font-family: var(--font-sans);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+/* Lenis smooth scroll */
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-stopped { overflow: hidden; }
+
+/* Preloader is skipped on repeat visits (class set by an inline head script). */
+html.seen .preloader { display: none; }
+
+/* Custom cursor only for fine pointers (never touch / keyboard-only). */
+@media (hover: hover) and (pointer: fine) {
+  html.has-cursor, html.has-cursor a, html.has-cursor button, html.has-cursor [data-cursor] { cursor: none; }
+  html.has-cursor input, html.has-cursor textarea { cursor: text; }
+}
+
+/* Magnetic + tilt helpers */
+[data-magnetic] { transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1); will-change: transform; }
+[data-tilt] {
+  transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s;
+  will-change: transform;
+}
+[data-tilt]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  opacity: var(--glow, 0);
+  background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), rgb(255 255 255 / 0.35), transparent 60%);
+  transition: opacity 0.3s;
+}
+
+/* Gallery focus: dim siblings of the hovered card */
+.gallery .card > figure { transition: opacity 0.3s, filter 0.3s; }
+.gallery:has(.card:hover) .card:not(:hover) > figure { opacity: 0.3; filter: saturate(0.4); }
+
+/* Section dot for the active nav link */
+.nav-link[aria-current="true"] { color: #fff; }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-magnetic], [data-tilt] { transition: none; transform: none !important; }
+}
