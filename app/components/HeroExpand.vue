@@ -2,41 +2,25 @@
 import { stagger } from '#nanime/utils'
 
 const ready = useState('foundry-ready', () => false)
-const section = ref<HTMLElement | null>(null)
 const stage = ref<HTMLElement | null>(null)
 const heading = ref<HTMLElement | null>(null)
+const subcopy = ref<HTMLElement | null>(null)
+const cta = ref<HTMLElement | null>(null)
 
-// One page-load moment: the headline types in once the preloader is done.
+// One orchestrated page-load moment: monumental headline reveals char-by-char, followed by copy & CTA.
 const { chars } = useSplitText(heading, { chars: true })
 const intro = useAnimeTimeline({ autoplay: false })
-intro.add(chars, { opacity: [0, 1], y: ['0.4em', 0], duration: 500, delay: stagger(35) }, 0)
-watch(ready, (r) => { if (r) intro.play() }, { immediate: true })
+intro
+  .add(chars, { opacity: [0, 1], y: ['0.35em', 0], duration: 550, delay: stagger(32), ease: 'outCubic' }, 0)
+  .add(() => [subcopy.value, cta.value].filter(Boolean) as HTMLElement[], {
+    opacity: [0, 1],
+    y: ['1rem', 0],
+    duration: 500,
+    delay: stagger(90),
+    ease: 'outCubic',
+  }, 320)
 
-// Scroll progress (0 → 1) drives the "unpacking" through CSS variables on the stage.
-// The card, its artwork and the copy all derive from --p, so they always stay in sync.
-onMounted(() => {
-  let raf = 0
-  const update = () => {
-    raf = 0
-    const s = section.value
-    const st = stage.value
-    if (!s || !st) return
-    const r = s.getBoundingClientRect()
-    const span = r.height - window.innerHeight
-    const raw = span > 0 ? Math.min(Math.max(-r.top / span, 0), 1) : 0
-    const p = raw * raw * (3 - 2 * raw) // smoothstep
-    st.style.setProperty('--p', p.toFixed(4))
-  }
-  const onScroll = () => { if (!raf) raf = requestAnimationFrame(update) }
-  window.addEventListener('scroll', onScroll, { passive: true })
-  window.addEventListener('resize', onScroll)
-  update()
-  onBeforeUnmount(() => {
-    window.removeEventListener('scroll', onScroll)
-    window.removeEventListener('resize', onScroll)
-    if (raf) cancelAnimationFrame(raf)
-  })
-})
+watch(ready, (r) => { if (r) intro.play() }, { immediate: true })
 
 // Heat follows the pointer.
 function onMove(e: PointerEvent) {
@@ -49,56 +33,62 @@ function onMove(e: PointerEvent) {
 </script>
 
 <template>
-  <section ref="section" class="relative h-[300vh]">
-    <div
-      ref="stage"
-      class="hero-stage sticky top-0 flex h-screen flex-col items-center justify-center overflow-hidden px-6"
-      style="--p: 0; background: radial-gradient(520px circle at var(--hx, 50%) var(--hy, 60%), rgb(255 122 26 / 0.16), transparent 70%)"
-      @pointermove="onMove"
-    >
-      <HeroEmbers />
+  <section
+    ref="stage"
+    class="hero-stage relative flex min-h-[100svh] flex-col items-center justify-center overflow-hidden px-6 pt-24 pb-20"
+    @pointermove="onMove"
+  >
+    <HeroEmbers />
 
-      <!-- The card starts small and tilted, then unpacks to the gallery width. -->
-      <div class="hero-card absolute overflow-hidden" data-cursor="Scroll">
-        <div class="hero-art h-full w-full">
-          <ArtCard :variant="0" class="h-full w-full !rounded-none" label="Idea → Product" />
-        </div>
+    <div class="relative z-10 mx-auto flex max-w-6xl flex-col items-center text-center">
+      <h1
+        ref="heading"
+        v-once
+        aria-label="Forged in code"
+        class="hero-title font-display font-normal text-white"
+      >
+        Forged<br>in code
+      </h1>
+
+      <p
+        ref="subcopy"
+        class="mx-auto mt-8 max-w-lg text-base leading-relaxed text-white/65 sm:text-lg"
+      >
+        Foundry is a software studio. We melt raw ideas down and cast them as products that last.
+      </p>
+
+      <div ref="cta" class="mt-10">
+        <a
+          v-magnetic="0.4"
+          href="#work"
+          class="inline-flex items-center justify-center rounded-lg bg-accent px-6 py-3 text-sm font-medium text-black transition-transform active:scale-95"
+        >
+          See our work
+        </a>
       </div>
-
-      <div class="hero-copy relative z-10 text-center">
-        <h1 ref="heading" v-once aria-label="Forged in code" class="font-display text-5xl font-normal leading-tight mix-blend-difference sm:text-7xl">Forged in code</h1>
-        <p class="mx-auto mt-4 max-w-md text-sm text-white/80 mix-blend-difference sm:text-base">
-          Foundry is a software studio. We melt raw ideas down and cast them as products that last.
-        </p>
-        <a v-magnetic="0.4" href="#work" class="mt-8 inline-block rounded-lg bg-accent px-5 py-2.5 text-sm font-medium text-black">See our work</a>
-      </div>
-
-      <p class="hero-hint absolute bottom-8 font-display text-[11px] tracking-[0.3em] text-white/50" aria-hidden="true">SCROLL TO UNPACK</p>
     </div>
+
+    <a
+      href="#work"
+      aria-label="Scroll to work"
+      class="absolute bottom-8 z-10 flex flex-col items-center gap-2 text-white/40 transition-colors hover:text-white/80"
+    >
+      <span class="h-10 w-px bg-gradient-to-b from-current to-transparent" aria-hidden="true" />
+    </a>
   </section>
 </template>
 
 <style scoped>
-.hero-card {
-  width: calc(18rem + (min(100vw - 3rem, 64rem) - 18rem) * var(--p));
-  height: calc(22rem + (62vh - 22rem) * var(--p));
-  border-radius: calc(1.75rem - 0.5rem * var(--p));
-  transform: rotate(calc((1 - var(--p)) * -5deg));
-  will-change: width, height, transform;
+.hero-stage {
+  background:
+    radial-gradient(620px circle at var(--hx, 50%) var(--hy, 55%), rgb(255 122 26 / 0.14), transparent 70%),
+    radial-gradient(ellipse 58% 42% at 50% 56%, rgb(255 122 26 / 0.09), transparent 75%);
 }
-.hero-art {
-  transform: scale(calc(1.45 - 0.45 * var(--p)));
-  will-change: transform;
-}
-/* Copy lifts away during the first half so the unpacked card is fully visible. */
-.hero-copy {
-  opacity: clamp(0, calc(1 - var(--p) * 2.2), 1);
-  transform: translateY(calc(var(--p) * -4rem));
-  pointer-events: auto;
-}
-.hero-hint { opacity: clamp(0, calc(1 - var(--p) * 6), 1); }
 
-@media (prefers-reduced-motion: reduce) {
-  .hero-card, .hero-art, .hero-copy { transition: none; }
+.hero-title {
+  font-size: clamp(3.25rem, 11.5vw, 9.5rem);
+  line-height: 0.94;
+  letter-spacing: -0.045em;
+  text-shadow: 0 0 80px rgb(255 122 26 / 0.18);
 }
 </style>
