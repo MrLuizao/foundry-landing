@@ -11,9 +11,7 @@ export default defineNuxtConfig({
   nanime: { reducedMotion: 'system' },
   fonts: {
     families: [
-      { name: 'JetBrains Mono', provider: 'google', weights: [400, 500] },
-      { name: 'Fraunces', provider: 'google', weights: [500, 600, 700] },
-      { name: 'Inter', provider: 'google', weights: [400, 500, 600] },
+      { name: 'JetBrains Mono', provider: 'google', weights: [400, 500, 600, 700], styles: ['normal', 'italic'] },
     ],
   },
   app: {

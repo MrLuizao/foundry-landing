@@ -7,9 +7,10 @@
   --color-paper: #f1e8d6;
   --color-accent: #ff7a1a;
   --font-display: "JetBrains Mono", ui-monospace, monospace;
-  --font-serif: "Fraunces", Georgia, serif;
-  --font-sans: "Inter", system-ui, sans-serif;
+  --font-serif: "JetBrains Mono", ui-monospace, monospace;
+  --font-sans: "JetBrains Mono", ui-monospace, monospace;
   --radius-card: 1.75rem;
+  --ease-hb: cubic-bezier(0.09, 0.68, 0.33, 0.91);
 }
 
 html {
@@ -31,10 +32,13 @@ html.lenis, html.lenis body { height: auto; }
 /* Preloader is skipped on repeat visits (class set by an inline head script). */
 html.seen .preloader { display: none; }
 
-/* Custom cursor only for fine pointers (never touch / keyboard-only). */
+/* Custom cursor only for fine pointers (never touch / keyboard-only).
+   Native <dialog> top-layer (e.g. CommandPalette) sits above fixed elements, so keep native cursor visible there. */
 @media (hover: hover) and (pointer: fine) {
   html.has-cursor, html.has-cursor a, html.has-cursor button, html.has-cursor [data-cursor] { cursor: none; }
   html.has-cursor input, html.has-cursor textarea { cursor: text; }
+  html.has-cursor dialog { cursor: auto; }
+  html.has-cursor dialog a, html.has-cursor dialog button { cursor: pointer; }
 }
 
 /* Magnetic + tilt helpers */
@@ -56,8 +60,8 @@ html.seen .preloader { display: none; }
 }
 
 /* Gallery focus: dim siblings of the hovered card */
-.gallery .card > figure { transition: opacity 0.3s, filter 0.3s; }
-.gallery:has(.card:hover) .card:not(:hover) > figure { opacity: 0.3; filter: saturate(0.4); }
+.gallery .card figure { transition: opacity 0.3s, filter 0.3s; }
+.gallery:has(.card:hover) .card:not(:hover) figure { opacity: 0.3; filter: saturate(0.4); }
 
 /* Section dot for the active nav link */
 .nav-link[aria-current="true"] { color: #fff; }

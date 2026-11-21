@@ -2,6 +2,7 @@ import { z } from 'zod'
 import nodemailer from 'nodemailer'
 
 const schema = z.object({
+  projectFor: z.string().trim().max(100).optional(),
   name: z.string().trim().min(2).max(100),
   email: z.string().trim().email().max(200),
   message: z.string().trim().min(10).max(2000),
@@ -26,13 +27,13 @@ export default defineEventHandler(async (event) => {
     secure: Number(SMTP_PORT ?? 465) === 465,
     auth: { user: SMTP_USER, pass: SMTP_PASS },
   })
-  const { name, email, message } = parsed.data
+  const { projectFor, name, email, message } = parsed.data
   await transport.sendMail({
     from: SMTP_USER,
     to: CONTACT_TO,
     replyTo: email,
     subject: `Fundere contact: ${name}`,
-    text: `${name} <${email}>\n\n${message}`,
+    text: `${name} <${email}>${projectFor ? `\nFor: ${projectFor}` : ''}\n\n${message}`,
   })
   return { ok: true }
 })

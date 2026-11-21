@@ -1,9 +1,8 @@
 <template>
   <main id="main">
     <HeroExpand />
-    <ProofGallery />
     <ServiceTabs />
-    <ProcessWheel />
+    <ProofGallery />
     <Manifesto />
     <ContactForm />
   </main>

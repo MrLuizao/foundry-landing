@@ -9,16 +9,18 @@ const copied = ref(false)
 const EMAIL = 'hello@fundere.software'
 
 const actions = [
-  { id: 'work', label: 'Go to Work', run: () => go('#work') },
-  { id: 'services', label: 'Go to Services', run: () => go('#services') },
-  { id: 'process', label: 'Go to Process', run: () => go('#process') },
+  { id: 'home', label: 'Go to Home', run: () => go('#home') },
+  { id: 'solutions', label: 'Go to Solutions', run: () => go('#solutions') },
+  { id: 'cases', label: 'Go to Cases', run: () => go('#cases') },
+  { id: 'about', label: 'Go to About Us', run: () => go('#about') },
   { id: 'contact', label: 'Start a project', run: () => go('#contact') },
   { id: 'email', label: 'Copy email address', run: async () => { await navigator.clipboard?.writeText(EMAIL); copied.value = true; setTimeout(() => (copied.value = false), 1800) } },
 ]
 const keywords: Record<string, string> = {
-  work: 'projects portfolio cases gallery',
-  services: 'web apps backend product',
-  process: 'how legacy',
+  home: 'top hero start',
+  solutions: 'services web apps backend product',
+  cases: 'work projects portfolio gallery',
+  about: 'us manifesto process legacy craft team',
   contact: 'start project form hire quote talk',
   email: 'mail copy hello',
 }
