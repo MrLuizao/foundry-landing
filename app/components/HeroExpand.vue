@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { stagger } from '#nanime/utils'
 
-const ready = useState('foundry-ready', () => false)
+const ready = useState('fundere-ready', () => false)
 const stage = ref<HTMLElement | null>(null)
 const heading = ref<HTMLElement | null>(null)
 const subcopy = ref<HTMLElement | null>(null)
@@ -54,7 +54,7 @@ function onMove(e: PointerEvent) {
         ref="subcopy"
         class="mx-auto mt-8 max-w-lg text-base leading-relaxed text-white/65 sm:text-lg"
       >
-        Foundry is a software studio. We melt raw ideas down and cast them as products that last.
+        Fundere is a software studio. We melt raw ideas down and cast them as products that last.
       </p>
 
       <div ref="cta" class="mt-10">

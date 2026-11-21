@@ -6,7 +6,7 @@ const index = ref(0)
 const dialog = ref<HTMLDialogElement | null>(null)
 const input = ref<HTMLInputElement | null>(null)
 const copied = ref(false)
-const EMAIL = 'hello@foundry.software'
+const EMAIL = 'hello@fundere.software'
 
 const actions = [
   { id: 'work', label: 'Go to Work', run: () => go('#work') },

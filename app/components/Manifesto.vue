@@ -34,7 +34,7 @@ useAnimate(() => floaters.value?.children ?? [], {
         <ArtCard :variant="3" class="absolute bottom-[8%] right-[8%] size-28 sm:size-40" />
       </div>
       <p class="relative max-w-md text-center font-serif text-2xl font-semibold leading-snug sm:text-3xl">
-        Foundry is for teams obsessed with craft, built by engineers who respect it. Whether you need a sharp MVP or a
+        Fundere is for teams obsessed with craft, built by engineers who respect it. Whether you need a sharp MVP or a
         platform that scales, we build it to last.
       </p>
     </div>

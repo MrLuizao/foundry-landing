@@ -31,7 +31,7 @@ export default defineEventHandler(async (event) => {
     from: SMTP_USER,
     to: CONTACT_TO,
     replyTo: email,
-    subject: `Foundry contact: ${name}`,
+    subject: `Fundere contact: ${name}`,
     text: `${name} <${email}>\n\n${message}`,
   })
   return { ok: true }

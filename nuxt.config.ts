@@ -19,9 +19,9 @@ export default defineNuxtConfig({
   app: {
     head: {
       htmlAttrs: { lang: 'en' },
-      title: 'Foundry — Software Studio',
+      title: 'Fundere — Software Studio',
       meta: [
-        { name: 'description', content: 'Foundry is a software studio that forges raw ideas into solid, production-ready products.' },
+        { name: 'description', content: 'Fundere is a software studio that forges raw ideas into solid, production-ready products.' },
       ],
     },
   },

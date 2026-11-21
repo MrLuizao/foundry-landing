@@ -34,8 +34,8 @@ function openPalette() { window.dispatchEvent(new KeyboardEvent('keydown', { key
     :class="hidden ? '-translate-y-24' : 'translate-y-0'"
   >
     <nav aria-label="Main" class="flex w-full max-w-3xl items-center justify-between rounded-xl border border-line bg-panel/90 px-4 py-2.5 backdrop-blur">
-      <a href="#" class="flex items-baseline gap-2" aria-label="Foundry Software Studio, home">
-        <span class="font-display text-base font-medium tracking-wide text-accent">FOUNDRY</span>
+      <a href="#" class="flex items-baseline gap-2" aria-label="Fundere Software Studio, home">
+        <span class="font-display text-base font-medium tracking-wide text-accent">FUNDERE</span>
         <span class="hidden font-display text-[10px] tracking-[0.25em] text-white/50 sm:inline">SOFTWARE STUDIO</span>
       </a>
       <ul class="hidden items-center gap-6 md:flex">

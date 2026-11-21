@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { animate, stagger } from '#nanime/utils'
 
-const ready = useState('foundry-ready', () => false)
+const ready = useState('fundere-ready', () => false)
 const letters = ref<HTMLElement | null>(null)
 const root = ref<HTMLElement | null>(null)
 const visible = ref(true)
 
 useHead({
   script: [{
-    innerHTML: "try{if(sessionStorage.getItem('foundry-seen'))document.documentElement.classList.add('seen')}catch(e){}",
+    innerHTML: "try{if(sessionStorage.getItem('fundere-seen'))document.documentElement.classList.add('seen')}catch(e){}",
     tagPosition: 'head',
   }],
 })
@@ -31,7 +31,7 @@ onMounted(() => {
       })
     }
     document.documentElement.style.overflow = ''
-    sessionStorage.setItem('foundry-seen', '1')
+    sessionStorage.setItem('fundere-seen', '1')
     ready.value = true
   }, 1500)
 })
@@ -40,7 +40,7 @@ onMounted(() => {
 <template>
   <div v-if="visible" ref="root" class="preloader fixed inset-0 z-[90] flex flex-col items-center justify-center bg-ink" aria-hidden="true">
     <div ref="letters" class="flex font-display text-4xl tracking-[0.3em] text-accent sm:text-6xl">
-      <span v-for="(c, i) in 'FOUNDRY'.split('')" :key="i" class="inline-block">{{ c }}</span>
+      <span v-for="(c, i) in 'FUNDERE'.split('')" :key="i" class="inline-block">{{ c }}</span>
     </div>
     <p class="mt-4 font-display text-[10px] tracking-[0.4em] text-white/40">SOFTWARE STUDIO</p>
   </div>
