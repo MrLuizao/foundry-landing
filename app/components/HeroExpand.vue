@@ -1,22 +1,33 @@
 <script setup lang="ts">
 import { stagger } from '#nanime/utils'
 
+const { t } = useI18n()
 const ready = useState('fundere-ready', () => false)
 const stage = ref<HTMLElement | null>(null)
 const heading = ref<HTMLElement | null>(null)
 const subcopy = ref<HTMLElement | null>(null)
+const subline = ref<HTMLElement | null>(null)
 
-// One orchestrated page-load moment: monumental headline reveals char-by-char, followed by subcopy.
+// One orchestrated page-load moment: monumental headline reveals char-by-char, followed by studio tag & word-by-word statement.
 const { chars } = useSplitText(heading, { chars: true })
+const { words } = useSplitText(subline, { words: true })
 const intro = useAnimeTimeline({ autoplay: false })
 intro
   .add(chars, { opacity: [0, 1], y: ['0.35em', 0], duration: 550, delay: stagger(32), ease: 'outCubic' }, 0)
   .add(() => (subcopy.value ? [subcopy.value] : []), {
     opacity: [0, 1],
-    y: ['1rem', 0],
+    y: ['0.75rem', 0],
     duration: 500,
     ease: 'outCubic',
-  }, 320)
+  }, 280)
+  .add(words, {
+    opacity: [0, 1],
+    y: ['1.15rem', 0],
+    filter: ['blur(8px)', 'blur(0px)'],
+    duration: 620,
+    delay: stagger(45),
+    ease: 'outExpo',
+  }, 420)
 
 watch(ready, (r) => { if (r) intro.play() }, { immediate: true })
 
@@ -74,24 +85,28 @@ function onLeave() {
       <!-- Layer 1: Monumental title (strongest scroll + pointer parallax) -->
       <div class="parallax-title-scroll">
         <div class="parallax-title-pointer">
-          <h1 ref="heading" v-once aria-label="Forged in code" class="hero-title font-display font-normal text-white">
-            Forged<br>in code
+          <h1 ref="heading" :aria-label="t.hero.ariaLabel" class="hero-title font-display font-normal text-white">
+            {{ t.hero.titleLine1 }}<br>{{ t.hero.titleLine2 }}
           </h1>
         </div>
       </div>
 
       <!-- Layer 2: Subtitle (medium parallax depth) -->
       <div class="parallax-sub-scroll">
-        <div class="parallax-sub-pointer">
-          <p ref="subcopy" class="mx-auto mt-8 max-w-xl text-lg leading-relaxed text-white/75 sm:text-2xl">
-            <span class="font-display font-medium tracking-wide text-accent">FUNDERE</span>
-            is a <strong>SOFTWARE STUDIO</strong>.<br class="sm:hidden"> We melt raw ideas down and cast them as products that last.
+        <div class="parallax-sub-pointer mt-14 flex max-w-5xl flex-col items-center gap-4 sm:mt-16">
+          <p ref="subcopy" class="font-display text-[clamp(1.1rem,3.8vw,3.5rem)] font-bold uppercase leading-none tracking-tight text-white/80 sm:whitespace-nowrap">
+            <span class="text-accent">FUNDERE</span>
+            <span class="mx-2 text-white/40">-</span>
+            <strong class="font-bold text-white">{{ t.hero.studio }}.</strong>
+          </p>
+          <p ref="subline" class="max-w-4xl font-display text-lg font-medium leading-snug tracking-tight text-white/85 sm:text-xl md:text-2xl">
+            {{ t.hero.subcopy }}
           </p>
         </div>
       </div>
     </div>
 
-    <a href="#solutions" aria-label="Scroll to solutions"
+    <a href="#solutions" :aria-label="t.hero.cueAria"
       class="hero-cue absolute bottom-8 z-10 flex flex-col items-center gap-2 text-white/40 transition-colors hover:text-white/80">
       <span class="h-10 w-px bg-gradient-to-b from-current to-transparent" aria-hidden="true" />
     </a>

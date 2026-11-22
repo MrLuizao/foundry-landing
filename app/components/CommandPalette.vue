@@ -1,4 +1,6 @@
 <script setup lang="ts">
+const { t, toggleLocale } = useI18n()
+
 // Command palette: Cmd/Ctrl+K. Keyboard-first navigation and quick actions.
 const open = ref(false)
 const query = ref('')
@@ -8,25 +10,29 @@ const input = ref<HTMLInputElement | null>(null)
 const copied = ref(false)
 const EMAIL = 'hello@fundere.software'
 
-const actions = [
-  { id: 'home', label: 'Go to Home', run: () => go('#home') },
-  { id: 'solutions', label: 'Go to Solutions', run: () => go('#solutions') },
-  { id: 'cases', label: 'Go to Cases', run: () => go('#cases') },
-  { id: 'about', label: 'Go to About Us', run: () => go('#about') },
-  { id: 'contact', label: 'Start a project', run: () => go('#contact') },
-  { id: 'email', label: 'Copy email address', run: async () => { await navigator.clipboard?.writeText(EMAIL); copied.value = true; setTimeout(() => (copied.value = false), 1800) } },
-]
+const actions = computed(() => [
+  { id: 'home', label: t.value.palette.actions.home, run: () => go('#home') },
+  { id: 'solutions', label: t.value.palette.actions.solutions, run: () => go('#solutions') },
+  { id: 'cases', label: t.value.palette.actions.cases, run: () => go('#cases') },
+  { id: 'about', label: t.value.palette.actions.about, run: () => go('#about') },
+  { id: 'contact', label: t.value.palette.actions.contact, run: () => go('#contact') },
+  { id: 'lang', label: t.value.palette.actions.toggleLang, run: () => { toggleLocale(); close() } },
+  { id: 'email', label: t.value.palette.actions.email, run: async () => { await navigator.clipboard?.writeText(EMAIL); copied.value = true; setTimeout(() => (copied.value = false), 1800) } },
+])
+
 const keywords: Record<string, string> = {
-  home: 'top hero start',
-  solutions: 'services web apps backend product',
-  cases: 'work projects portfolio gallery',
-  about: 'us manifesto process legacy craft team',
-  contact: 'start project form hire quote talk',
-  email: 'mail copy hello',
+  home: 'top hero start inicio principal',
+  solutions: 'services web apps backend product servicios soluciones productos',
+  cases: 'work projects portfolio gallery proyectos casos portafolio',
+  about: 'us manifesto process legacy craft team nosotros manifiesto equipo',
+  contact: 'start project form hire quote talk contacto iniciar proyecto cotizar hablar',
+  lang: 'language idioma english español switch cambiar toggle traducir',
+  email: 'mail copy hello correo copiar escribir',
 }
+
 const results = computed(() => {
   const q = query.value.trim().toLowerCase()
-  return actions.filter(a => !q || `${a.label} ${keywords[a.id] ?? ''}`.toLowerCase().includes(q))
+  return actions.value.filter(a => !q || `${a.label} ${keywords[a.id] ?? ''}`.toLowerCase().includes(q))
 })
 
 function go(hash: string) {
@@ -68,7 +74,7 @@ defineExpose({ show })
       role="combobox"
       aria-expanded="true"
       aria-controls="palette-list"
-      placeholder="Type a command…"
+      :placeholder="t.palette.placeholder"
       class="w-full border-b border-line bg-transparent px-5 py-4 text-sm outline-none placeholder:text-white/40"
       @keydown="onInputKey"
     >
@@ -84,10 +90,14 @@ defineExpose({ show })
         @click="a.run()"
       >
         <span>{{ a.label }}</span>
-        <span v-if="a.id === 'email' && copied" class="font-display text-xs">Copied</span>
+        <span v-if="a.id === 'email' && copied" class="font-display text-xs">{{ t.palette.copied }}</span>
       </li>
-      <li v-if="!results.length" class="px-3 py-6 text-center text-sm text-white/50">No results. Try "work" or "contact".</li>
+      <li v-if="!results.length" class="px-3 py-6 text-center text-sm text-white/50">
+        {{ t.palette.noResults }}
+      </li>
     </ul>
-    <p class="border-t border-line px-5 py-2 font-display text-[10px] text-white/40">↑ ↓ navigate · Enter select · Esc close</p>
+    <p class="border-t border-line px-5 py-2 font-display text-[10px] text-white/40">
+      {{ t.palette.footerHint }}
+    </p>
   </dialog>
 </template>

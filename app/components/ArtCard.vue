@@ -1,6 +1,8 @@
 <script setup lang="ts">
 // Renders real case study imagery when provided, falling back to stylized studio gradients.
-const props = defineProps<{ variant: number; label?: string; image?: string }>()
+const props = withDefaults(defineProps<{ variant: number; label?: string; image?: string; showLabel?: boolean }>(), {
+  showLabel: true,
+})
 
 const arts = [
   'radial-gradient(circle at 28% 30%, #f2c230 0 16%, transparent 17%), linear-gradient(160deg, #f1e8d6 0 55%, #5b8fb9 55% 78%, #e8501a 78%)',
@@ -33,7 +35,7 @@ const background = computed(() => arts[props.variant % arts.length])
       class="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"
       aria-hidden="true"
     />
-    <figcaption v-if="label" class="absolute bottom-3 left-3 rounded-full bg-black/65 px-3 py-1 text-xs font-medium text-white backdrop-blur">
+    <figcaption v-if="label && showLabel" class="absolute bottom-3 left-3 rounded-full bg-black/65 px-3 py-1 text-xs font-medium text-white backdrop-blur">
       {{ label }}
     </figcaption>
   </figure>

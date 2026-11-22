@@ -1,5 +1,6 @@
 export interface Project {
   slug: string
+  scope: string
   title: string
   tagline: string
   result: string

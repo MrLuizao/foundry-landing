@@ -1,181 +1,126 @@
 <script setup lang="ts">
-interface IndustryPoint {
-  title: string
-  body: string
-}
+import { animate, stagger } from '#nanime/utils'
 
-interface IndustryArea {
-  id: 'ai' | 'web3' | 'fintech' | 'cybersecurity'
-  label: string
-  eyebrow: string
-  headline: string
-  summary: string
-  splitTitle: string
-  points: IndustryPoint[]
-  stack: string[]
-}
+const { t } = useI18n()
 
-const industries: IndustryArea[] = [
-  {
-    id: 'ai',
-    label: 'AI',
-    eyebrow: 'Artificial Intelligence',
-    headline: 'Software and product engineering for AI companies',
-    summary: 'We turn raw models, agents, and retrieval pipelines into fast, reliable products.',
-    splitTitle: 'Built for AI teams shipping to production',
-    points: [
-      { title: 'Streaming & Copilots', body: 'Low-latency chat, generative UI, and transparent tool-call states.' },
-      { title: 'Agents & Retrieval', body: 'Durable multi-step workflows and grounded RAG over your data.' },
-      { title: 'Guardrails & Evals', body: 'Schema-enforced outputs, fallbacks, and trace observability.' },
-    ],
-    stack: ['AI SDK', 'TypeScript', 'Postgres', 'Edge APIs'],
-  },
-  {
-    id: 'web3',
-    label: 'Web3',
-    eyebrow: 'Decentralized Systems',
-    headline: 'Clear interfaces and resilient backends for Web3',
-    summary: 'Fast, legible applications around wallets, chains, and live on-chain state.',
-    splitTitle: 'Built for protocols that want real adoption',
-    points: [
-      { title: 'Wallet & Signing UX', body: 'Frictionless multi-chain connection, previews, and clear tx states.' },
-      { title: 'On-Chain Indexing', body: 'Fast read layers so balances, positions, and feeds load instantly.' },
-      { title: 'Protocol Dashboards', body: 'Clean staking, governance, and treasury tools built for clarity.' },
-    ],
-    stack: ['Vue 3 / Nuxt', 'Viem / Wagmi', 'TypeScript', 'Nitro'],
-  },
-  {
-    id: 'fintech',
-    label: 'Fintech',
-    eyebrow: 'Financial Infrastructure',
-    headline: 'High-trust financial products built for zero silent failures',
-    summary: 'Onboarding, payouts, and auditable ledgers engineered with strict validation.',
-    splitTitle: 'Built for teams moving real money',
-    points: [
-      { title: 'KYC & Onboarding', body: 'Streamlined verification flows that convert without cutting corners.' },
-      { title: 'Payments & Ledgers', body: 'Idempotent webhooks, Stripe Connect, and clean reconciliation.' },
-      { title: 'Audit & Permissions', body: 'Role-based access, immutable logs, and exportable reporting.' },
-    ],
-    stack: ['Nuxt', 'Stripe Connect', 'Postgres', 'Zod'],
-  },
-  {
-    id: 'cybersecurity',
-    label: 'Cybersecurity',
-    eyebrow: 'Security & Compliance',
-    headline: 'Sharp operational interfaces for security-first platforms',
-    summary: 'Fast triage consoles, strict access boundaries, and compliance workflows.',
-    splitTitle: 'Built for teams protecting critical systems',
-    points: [
-      { title: 'Threat & Posture UI', body: 'High-contrast triage views and fast search over large telemetry.' },
-      { title: 'Zero-Trust Access', body: 'Granular RBAC, scoped API keys, and strict tenant isolation.' },
-      { title: 'Audit Readiness', body: 'Tamper-evident trails and clean compliance evidence exports.' },
-    ],
-    stack: ['TypeScript', 'Node / Nitro', 'Postgres', 'Edge Security'],
-  },
-]
+type IndustryId = 'ai' | 'web' | 'backend' | 'cybersecurity'
 
+const industries = computed(() => t.value.solutions.areas)
+
+const section = ref<HTMLElement | null>(null)
 const track = ref<HTMLElement | null>(null)
 const stage = ref<HTMLElement | null>(null)
-const activeId = ref<IndustryArea['id']>('ai')
-const current = computed(() => industries.find(a => a.id === activeId.value)!)
+const panelRef = ref<HTMLElement | null>(null)
+const activeId = ref<IndustryId>('ai')
+const current = computed(() => industries.value.find(a => a.id === activeId.value) || industries.value[0]!)
 const tabs = ref<HTMLElement[]>([])
-const pill = reactive({ x: 0, w: 0 })
 
 // Scrubs --p (0 → 1) while scrolling through the sticky track; fully reversible on scroll-up.
 const { progress } = useScrollProgress(track, { mode: 'sticky', target: stage, smooth: false })
 
-function movePill() {
-  const i = industries.findIndex(a => a.id === activeId.value)
-  const el = tabs.value[i]
-  if (el) {
-    pill.x = el.offsetLeft
-    pill.w = el.offsetWidth
-  }
+function selectIndustry(id: string) {
+  activeId.value = id as IndustryId
 }
 
-function selectIndustry(id: IndustryArea['id']) {
-  activeId.value = id
-  if (typeof window !== 'undefined' && track.value) {
-    const isDesktop = window.innerWidth >= 768
-    if (isDesktop && progress.value > 0.55) {
-      const span = track.value.offsetHeight - window.innerHeight
-      const targetTop = window.scrollY + track.value.getBoundingClientRect().top + Math.max(span * 0.48, 0)
-      window.scrollTo({ top: targetTop, behavior: 'smooth' })
-    }
-    else if (!isDesktop && progress.value > 0.05) {
-      const top = window.scrollY + track.value.getBoundingClientRect().top - 80
-      window.scrollTo({ top, behavior: 'smooth' })
-    }
+watch(activeId, async () => {
+  await nextTick()
+  if (!panelRef.value || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+
+  const pitchItems = panelRef.value.querySelectorAll('[data-pitch]')
+  const pointItems = panelRef.value.querySelectorAll('[data-point]')
+
+  if (pitchItems.length) {
+    animate(pitchItems, {
+      opacity: [0, 1],
+      x: [-20, 0],
+      duration: 420,
+      delay: stagger(55),
+      ease: 'outCubic',
+    })
   }
-}
+  if (pointItems.length) {
+    animate(pointItems, {
+      opacity: [0, 1],
+      x: [28, 0],
+      duration: 440,
+      delay: stagger(75, { start: 60 }),
+      ease: 'outCubic',
+    })
+  }
+})
 
 function onKey(e: KeyboardEvent) {
-  const i = industries.findIndex(a => a.id === activeId.value)
+  const i = industries.value.findIndex(a => a.id === activeId.value)
   let n = i
-  if (e.key === 'ArrowRight') n = (i + 1) % industries.length
-  else if (e.key === 'ArrowLeft') n = (i - 1 + industries.length) % industries.length
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') n = (i + 1) % industries.value.length
+  else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') n = (i - 1 + industries.value.length) % industries.value.length
   else return
   e.preventDefault()
-  selectIndustry(industries[n]!.id)
+  selectIndustry(industries.value[n]!.id)
   tabs.value[n]?.focus()
 }
 
-watch(activeId, () => nextTick(movePill))
-onMounted(() => {
-  movePill()
-  window.addEventListener('resize', movePill)
-  onBeforeUnmount(() => window.removeEventListener('resize', movePill))
-})
+function onMove(e: PointerEvent) {
+  const s = section.value
+  if (!s) return
+  const r = s.getBoundingClientRect()
+  s.style.setProperty('--hx', `${e.clientX - r.left}px`)
+  s.style.setProperty('--hy', `${e.clientY - r.top}px`)
+}
 </script>
 
 <template>
-  <section id="solutions" class="border-t border-line px-4 py-20 sm:px-6 md:py-28">
+  <section
+    id="solutions"
+    ref="section"
+    class="solutions-section relative overflow-x-clip border-t border-line px-4 py-16 sm:px-6 md:py-20"
+    @pointermove="onMove"
+  >
     <div class="mx-auto max-w-5xl">
-      <!-- On mobile (< md): header & card appear together.
-           On desktop (md+): header appears first, fades out on scroll as the card enters, then card transitions Mini-Hero → split. -->
-      <div ref="track" class="relative h-[185vh] md:h-[290vh]">
+      <!-- On mobile (< md): editorial header followed by open-canvas showcase.
+           On desktop (md+): lines reveal 1 by 1, description slides in from the side, then opposing halves lock together. -->
+      <div ref="track" class="relative md:h-[195vh]">
         <div
           ref="stage"
-          class="solutions-stage sticky top-20 md:top-24"
+          class="solutions-stage md:sticky md:top-24"
           style="--p: 0"
         >
           <div class="relative">
             <!-- Editorial header -->
             <div
-              class="editorial-intro mb-8 grid gap-6 md:absolute md:inset-x-0 md:top-16 md:mb-0 md:grid-cols-12 md:items-end"
-              :class="progress < 0.38 ? 'md:pointer-events-auto' : 'md:pointer-events-none'"
+              class="editorial-intro mb-14 flex flex-col items-start md:absolute md:inset-x-0 md:top-8 md:mb-0"
+              :class="progress < 0.58 ? 'md:pointer-events-auto' : 'md:pointer-events-none'"
             >
-              <div class="md:col-span-8">
-                <ScrambleHeading
-                  text="You know the product is strong. Execution makes it undeniable."
-                  class="font-serif text-3xl font-semibold leading-tight sm:text-5xl"
-                />
-              </div>
-              <div class="md:col-span-4">
-                <p class="font-display text-xs leading-relaxed text-white/60 sm:text-sm">
-                  One senior team covering architecture, interface craft, and production delivery.
+              <h2 class="origin-left font-display font-bold uppercase leading-[0.94] tracking-tight text-white">
+                <span class="editorial-line-1 block whitespace-nowrap text-[clamp(1.5rem,5.5vw,3.75rem)] text-white/75">
+                  {{ t.solutions.line1 }}
+                </span>
+                <span class="editorial-line-2 mt-1 block whitespace-nowrap text-[clamp(2.25rem,8.5vw,5.75rem)] text-white/90">
+                  {{ t.solutions.line2 }}
+                </span>
+                <span class="editorial-line-3 mt-1 block whitespace-nowrap text-[clamp(3rem,12vw,8rem)] text-white">
+                  {{ t.solutions.line3 }}
+                </span>
+              </h2>
+              <div class="editorial-desc mt-8 max-w-2xl">
+                <p class="font-display text-base leading-relaxed text-white/75 sm:text-xl md:text-2xl">
+                  {{ t.solutions.subcopy }}
                 </p>
               </div>
             </div>
 
-            <!-- Unified rounded-card container -->
+            <!-- Open-canvas architectural showcase -->
             <div
-              class="solutions-card overflow-hidden rounded-card border border-line bg-panel"
-              :class="progress >= 0.24 ? 'md:pointer-events-auto' : 'md:pointer-events-none'"
+              class="solutions-showcase"
+              :class="progress >= 0.56 ? 'md:pointer-events-auto' : 'md:pointer-events-none'"
             >
-            <!-- Signature Fundere sliding-pill tab bar inside the card -->
-            <div class="flex justify-center border-b border-line px-4 py-4 sm:py-5">
+              <!-- Clean architectural index bar -->
               <div
                 role="tablist"
-                aria-label="Industries"
-                class="relative inline-flex max-w-full overflow-x-auto rounded-full border border-line bg-ink p-1"
+                aria-label="Capabilities"
+                class="showcase-bar flex flex-nowrap items-center gap-x-7 overflow-x-auto border-y border-line [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:gap-x-10 md:gap-x-12"
                 @keydown="onKey"
               >
-                <span
-                  class="absolute left-0 top-1 h-[calc(100%-0.5rem)] rounded-full bg-accent transition-all duration-500 ease-[cubic-bezier(0.09,0.68,0.33,0.91)]"
-                  :style="{ transform: `translateX(${pill.x}px)`, width: `${pill.w}px` }"
-                  aria-hidden="true"
-                />
                 <button
                   v-for="(area, i) in industries"
                   :id="`focus-tab-${area.id}`"
@@ -186,103 +131,69 @@ onMounted(() => {
                   :tabindex="activeId === area.id ? 0 : -1"
                   :aria-selected="activeId === area.id"
                   :aria-controls="`focus-panel-${area.id}`"
-                  class="relative z-10 whitespace-nowrap rounded-full px-4 py-2 text-xs font-medium transition-colors duration-300 sm:px-5 sm:text-sm"
-                  :class="activeId === area.id ? 'text-black' : 'text-white/75 hover:text-white'"
+                  class="group relative shrink-0 whitespace-nowrap py-4 font-display text-sm font-medium tracking-tight transition-colors sm:py-5 sm:text-base md:text-lg"
+                  :class="activeId === area.id ? 'text-white' : 'text-white/40 hover:text-white/75'"
                   @click="selectIndustry(area.id)"
                 >
-                  {{ area.label }}
+                  <span>{{ area.label }}</span>
+                  <span
+                    class="absolute bottom-0 left-0 right-0 h-[3px] origin-left bg-accent transition-transform duration-300"
+                    :class="activeId === area.id ? 'scale-x-100' : 'scale-x-0'"
+                    aria-hidden="true"
+                  />
                 </button>
               </div>
-            </div>
 
-            <!-- Subtle scroll-phase progress hairline -->
-            <div class="h-px w-full bg-white/[0.06]" aria-hidden="true">
-              <div class="phase-bar h-full bg-accent/70" />
-            </div>
-
-            <!-- Dual-phase industry showcase stage (works identically on mobile & desktop) -->
-            <AnimeTransition mode="out-in">
+              <!-- 12-column editorial split: left & right halves lock in horizontally -->
               <div
                 :id="`focus-panel-${current.id}`"
+                ref="panelRef"
                 :key="current.id"
                 role="tabpanel"
                 :aria-labelledby="`focus-tab-${current.id}`"
-                class="relative min-h-[450px] overflow-hidden md:min-h-[420px]"
+                class="grid gap-10 pt-10 md:grid-cols-12 md:gap-12 md:pt-12"
               >
-                <!-- BLOCK 1: Centered Mini-Hero -->
-                <div
-                  class="stage-one absolute inset-0 flex flex-col items-center justify-center overflow-hidden px-5 py-10 text-center sm:px-12 md:py-16"
-                  :class="progress < 0.65 ? 'md:pointer-events-auto' : 'pointer-events-none'"
-                >
-                  <div
-                    class="orbital-ring pointer-events-none absolute left-1/2 top-1/2 size-[320px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/[0.06] sm:size-[440px]"
-                    aria-hidden="true"
-                  />
-                  <div
-                    class="orbital-ring-inner pointer-events-none absolute left-1/2 top-1/2 size-[200px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-accent/15 sm:size-[290px]"
-                    aria-hidden="true"
-                  />
-
-                  <div class="relative z-10 mx-auto max-w-2xl">
-                    <p class="font-display text-[11px] tracking-[0.22em] text-accent uppercase">
-                      {{ current.eyebrow }}
-                    </p>
-                    <h3 class="mt-4 font-serif text-3xl font-semibold leading-tight text-white sm:text-4xl">
-                      {{ current.headline }}
-                    </h3>
-                    <p class="mx-auto mt-4 max-w-lg text-sm leading-relaxed text-white/65 sm:text-base">
-                      {{ current.summary }}
-                    </p>
-                    <div class="mt-6 flex flex-wrap justify-center gap-2">
-                      <span
-                        v-for="tech in current.stack"
-                        :key="tech"
-                        class="rounded-full border border-line bg-ink/60 px-3 py-1 font-display text-[11px] text-white/65"
-                      >
-                        {{ tech }}
-                      </span>
-                    </div>
-                  </div>
+                <!-- Left: Value proposition & integration summary -->
+                <div class="showcase-pitch flex flex-col justify-center md:col-span-5">
+                  <p data-pitch class="font-display text-[11px] tracking-[0.2em] text-accent uppercase">
+                    {{ current.eyebrow }}
+                  </p>
+                  <h3 data-pitch class="mt-3 font-display text-2xl font-semibold leading-snug tracking-tight text-white sm:text-3xl">
+                    {{ current.headline }}
+                  </h3>
+                  <p data-pitch class="mt-4 text-sm leading-relaxed text-white/65 sm:text-base">
+                    {{ current.summary }}
+                  </p>
                 </div>
 
-                <!-- BLOCK 2: Concise 2-column execution split (no button, fits cleanly on mobile & desktop) -->
-                <div
-                  class="stage-two absolute inset-0 flex flex-col justify-center px-5 py-8 sm:px-12"
-                  :class="progress >= 0.65 ? 'pointer-events-auto' : 'pointer-events-none'"
-                >
-                  <div class="grid items-center gap-6 md:grid-cols-12 md:gap-10">
-                    <div class="md:col-span-5">
-                      <p class="font-display text-[11px] tracking-[0.2em] text-accent uppercase">
-                        {{ current.label }}
-                      </p>
-                      <h4 class="mt-2 font-serif text-xl font-semibold leading-snug text-white sm:mt-3 sm:text-3xl">
-                        {{ current.splitTitle }}
-                      </h4>
-                    </div>
-
-                    <div class="divide-y divide-line border-y border-line md:col-span-7">
-                      <div
-                        v-for="(pt, idx) in current.points"
-                        :key="pt.title"
-                        class="flex items-start gap-3.5 py-3.5 sm:gap-4 sm:py-5"
-                      >
-                        <span class="mt-0.5 font-display text-xs text-accent">
-                          0{{ idx + 1 }}
-                        </span>
-                        <div>
-                          <p class="text-sm font-medium text-white sm:text-base">
-                            {{ pt.title }}
-                          </p>
-                          <p class="mt-1 text-xs leading-relaxed text-white/60 sm:text-sm">
-                            {{ pt.body }}
-                          </p>
-                        </div>
+                <!-- Right: Architectural capability list -->
+                <div class="divide-y divide-line border-y border-line md:col-span-7">
+                  <div
+                    v-for="pt in current.points"
+                    :key="pt.title"
+                    class="showcase-point group relative overflow-hidden py-5 transition-colors hover:bg-white/[0.02] sm:py-6"
+                  >
+                    <span
+                      class="absolute bottom-0 left-0 top-0 w-0.5 origin-top scale-y-0 bg-accent transition-transform duration-300 group-hover:scale-y-100"
+                      aria-hidden="true"
+                    />
+                    <div data-point class="flex items-start gap-4 pl-2 sm:gap-5 sm:pl-3">
+                      <span
+                        class="mt-2 size-1.5 shrink-0 rounded-full bg-accent transition-all duration-300 group-hover:scale-150 group-hover:shadow-[0_0_12px_rgb(255_122_26/0.75)]"
+                        aria-hidden="true"
+                      />
+                      <div>
+                        <h4 class="font-display text-sm font-medium text-white transition-colors group-hover:text-accent sm:text-base">
+                          {{ pt.title }}
+                        </h4>
+                        <p class="mt-1.5 text-xs leading-relaxed text-white/60 sm:text-sm">
+                          {{ pt.body }}
+                        </p>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </AnimeTransition>
             </div>
           </div>
         </div>
@@ -292,71 +203,98 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.phase-bar {
-  width: calc(var(--p) * 100%);
-  will-change: width;
+.solutions-section {
+  background:
+    radial-gradient(640px circle at var(--hx, 50%) var(--hy, 50%), rgb(255 122 26 / 0.08), transparent 70%);
 }
 
-.stage-one {
-  --out: clamp(0, calc((var(--p) - 0.16) / 0.34), 1);
-  opacity: calc(1 - var(--out));
-  transform: translate3d(0, calc(var(--out) * -2rem), 0) scale(calc(1 - var(--out) * 0.04));
-  will-change: transform, opacity;
-}
-
-.orbital-ring {
-  transform: scale(calc(1 + var(--p) * 0.12));
-}
-
-.orbital-ring-inner {
-  transform: scale(calc(1 - var(--p) * 0.08));
-}
-
-.stage-two {
-  --in: clamp(0, calc((var(--p) - 0.44) / 0.32), 1);
-  opacity: var(--in);
-  transform: translate3d(0, calc((1 - var(--in)) * 2rem), 0);
-  will-change: transform, opacity;
-}
-
-/* Desktop (md+): separate editorial intro → card reveal → internal 2-phase card transition */
+/* Desktop (md+): 1-by-1 line reveal → side slide-in description → intro out → opposing halves lock in */
 @media (min-width: 768px) {
+  .editorial-line-1 {
+    --l1: clamp(0, calc(var(--p) / 0.08), 1);
+    opacity: calc(0.25 + 0.75 * var(--l1));
+    transform: translate3d(0, calc((1 - var(--l1)) * 0.75rem), 0);
+    will-change: transform, opacity;
+  }
+
+  .editorial-line-2 {
+    --l2: clamp(0, calc((var(--p) - 0.06) / 0.10), 1);
+    opacity: var(--l2);
+    transform: translate3d(0, calc((1 - var(--l2)) * 1rem), 0);
+    will-change: transform, opacity;
+  }
+
+  .editorial-line-3 {
+    --l3: clamp(0, calc((var(--p) - 0.14) / 0.11), 1);
+    opacity: var(--l3);
+    transform: translate3d(0, calc((1 - var(--l3)) * 1.25rem), 0);
+    will-change: transform, opacity;
+  }
+
+  .editorial-desc {
+    --desc-in: clamp(0, calc((var(--p) - 0.23) / 0.15), 1);
+    opacity: var(--desc-in);
+    transform: translate3d(calc((1 - var(--desc-in)) * 4.5rem), 0, 0);
+    filter: blur(calc((1 - var(--desc-in)) * 6px));
+    will-change: transform, opacity, filter;
+  }
+
   .editorial-intro {
-    --intro-out: clamp(0, calc((var(--p) - 0.16) / 0.24), 1);
+    --intro-out: clamp(0, calc((var(--p) - 0.45) / 0.13), 1);
     opacity: calc(1 - var(--intro-out));
-    transform: translate3d(0, calc(var(--intro-out) * -2.25rem), 0);
+    transform: translate3d(0, calc(var(--intro-out) * -2rem), 0);
     will-change: transform, opacity;
   }
 
-  .solutions-card {
-    --card-in: clamp(0, calc((var(--p) - 0.22) / 0.26), 1);
-    opacity: var(--card-in);
-    transform: translate3d(0, calc((1 - var(--card-in)) * 3rem), 0) scale(calc(0.96 + 0.04 * var(--card-in)));
+  .showcase-bar {
+    --bar-in: clamp(0, calc((var(--p) - 0.54) / 0.18), 1);
+    opacity: var(--bar-in);
+    clip-path: inset(0 calc((1 - var(--bar-in)) * 100%) 0 0);
+    will-change: clip-path, opacity;
+  }
+
+  .showcase-pitch {
+    --pitch-in: clamp(0, calc((var(--p) - 0.58) / 0.20), 1);
+    opacity: var(--pitch-in);
+    transform: translate3d(calc((1 - var(--pitch-in)) * -2.5rem), 0, 0);
     will-change: transform, opacity;
   }
 
-  .phase-bar {
-    width: calc(clamp(0, calc((var(--p) - 0.45) / 0.55), 1) * 100%);
+  .showcase-point:nth-child(1) {
+    --pt-in: clamp(0, calc((var(--p) - 0.62) / 0.18), 1);
+    opacity: var(--pt-in);
+    transform: translate3d(calc((1 - var(--pt-in)) * 3rem), 0, 0);
+    will-change: transform, opacity;
   }
 
-  .stage-one {
-    --out: clamp(0, calc((var(--p) - 0.54) / 0.22), 1);
+  .showcase-point:nth-child(2) {
+    --pt-in: clamp(0, calc((var(--p) - 0.69) / 0.18), 1);
+    opacity: var(--pt-in);
+    transform: translate3d(calc((1 - var(--pt-in)) * 3rem), 0, 0);
+    will-change: transform, opacity;
   }
 
-  .stage-two {
-    --in: clamp(0, calc((var(--p) - 0.68) / 0.22), 1);
+  .showcase-point:nth-child(3) {
+    --pt-in: clamp(0, calc((var(--p) - 0.76) / 0.18), 1);
+    opacity: var(--pt-in);
+    transform: translate3d(calc((1 - var(--pt-in)) * 3rem), 0, 0);
+    will-change: transform, opacity;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .editorial-line-1,
+  .editorial-line-2,
+  .editorial-line-3,
   .editorial-intro,
-  .solutions-card,
-  .stage-one,
-  .stage-two,
-  .orbital-ring,
-  .orbital-ring-inner {
+  .editorial-desc,
+  .showcase-bar,
+  .showcase-pitch,
+  .showcase-point {
     position: static !important;
     transform: none !important;
+    filter: none !important;
+    clip-path: none !important;
     opacity: 1 !important;
   }
 }

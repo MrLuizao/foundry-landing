@@ -1,28 +1,34 @@
 <script setup lang="ts">
 import { z } from 'zod'
 
-const schema = z.object({
-  name: z.string().trim().min(2, 'Tell us your name.'),
-  email: z.string().trim().email('Enter a valid email, like you@company.com.'),
-  message: z.string().trim().min(10, 'Add at least 10 characters about your project.'),
-  accepted: z.literal(true, { message: 'Please accept to continue.' }),
-})
+const { t } = useI18n()
 
 type Field = 'name' | 'email' | 'message' | 'accepted'
 
-const audienceOptions = [
-  'A business I own or work for',
-  'A client\'s business',
-] as const
+const audienceOptions = computed(() => t.value.contact.audiences)
+
+const schema = computed(() => z.object({
+  name: z.string().trim().min(2, t.value.contact.errors.name),
+  email: z.string().trim().email(t.value.contact.errors.email),
+  message: z.string().trim().min(10, t.value.contact.errors.message),
+  accepted: z.literal(true, { message: t.value.contact.errors.accepted }),
+}))
 
 const form = reactive({
-  projectFor: audienceOptions[0] as string,
+  projectFor: '' as string,
   name: '',
   email: '',
   message: '',
   accepted: false,
   website: '',
 })
+
+watch(audienceOptions, (opts) => {
+  if (!form.projectFor || !opts.includes(form.projectFor)) {
+    form.projectFor = opts[0] || ''
+  }
+}, { immediate: true })
+
 const touched = reactive<Record<Field, boolean>>({
   name: false,
   email: false,
@@ -35,7 +41,7 @@ const root = ref<HTMLElement | null>(null)
 const burst = ref<HTMLCanvasElement | null>(null)
 
 const errors = computed(() => {
-  const r = schema.safeParse(form)
+  const r = schema.value.safeParse(form)
   const out: Partial<Record<Field, string>> = {}
   if (!r.success) for (const i of r.error.issues) out[i.path[0] as Field] ??= i.message
   return out
@@ -67,7 +73,7 @@ async function submit() {
     status.value = 'sent'
     embers()
     Object.assign(form, {
-      projectFor: audienceOptions[0],
+      projectFor: audienceOptions.value[0],
       name: '',
       email: '',
       message: '',
@@ -78,7 +84,7 @@ async function submit() {
   }
   catch (e: any) {
     status.value = 'error'
-    serverError.value = e?.data?.statusMessage || 'We could not send your message. Check your connection and try again.'
+    serverError.value = e?.data?.statusMessage || t.value.contact.errors.defaultServer
   }
 }
 
@@ -127,9 +133,9 @@ function embers() {
 <template>
   <section id="contact" ref="root" class="px-6 py-28">
     <div class="mx-auto max-w-2xl">
-      <ScrambleHeading text="Tell us what to build" class="font-display text-4xl sm:text-5xl" />
+      <ScrambleHeading :text="t.contact.heading" class="font-display text-4xl sm:text-5xl" />
       <p class="mt-4 text-white/60">
-        Share a few details and we will reply within two business days.
+        {{ t.contact.subcopy }}
       </p>
 
       <div class="relative mt-10 rounded-card border border-line bg-panel p-6 sm:p-10">
@@ -138,9 +144,9 @@ function embers() {
           <span class="inline-flex size-10 items-center justify-center rounded-lg border border-accent/40 bg-accent/10 text-sm text-accent">
             ✓
           </span>
-          <h3 class="mt-5 font-display text-2xl text-white">Message received</h3>
+          <h3 class="mt-5 font-display text-2xl text-white">{{ t.contact.successTitle }}</h3>
           <p class="mt-2 max-w-sm text-sm leading-relaxed text-white/60">
-            Thanks for reaching out. We will review your note and reply within two business days.
+            {{ t.contact.successMessage }}
           </p>
           <button
             v-magnetic
@@ -148,7 +154,7 @@ function embers() {
             class="mt-8 inline-block rounded-lg bg-accent px-5 py-2.5 text-sm font-medium text-black"
             @click="resetForm"
           >
-            Send another message
+            {{ t.contact.successAction }}
           </button>
         </div>
 
@@ -156,7 +162,7 @@ function embers() {
         <form v-else class="space-y-8" novalidate @submit.prevent="submit">
           <fieldset>
             <legend class="text-xs font-medium tracking-wide text-white/50">
-              Who's this project for?
+              {{ t.contact.audienceLegend }}
             </legend>
             <div class="mt-3.5 flex flex-col gap-3 sm:flex-row sm:gap-8">
               <label
@@ -188,14 +194,14 @@ function embers() {
 
           <div class="space-y-5">
             <div>
-              <label for="f-name" class="sr-only">Your name</label>
+              <label for="f-name" class="sr-only">{{ t.contact.nameLabel }}</label>
               <input
                 id="f-name"
                 v-model="form.name"
                 name="name"
                 type="text"
                 autocomplete="name"
-                placeholder="Your name"
+                :placeholder="t.contact.namePlaceholder"
                 :aria-invalid="!!showError('name')"
                 aria-describedby="e-name"
                 class="w-full border-l-2 bg-transparent py-2 pl-4 text-base text-white outline-none transition-colors placeholder:text-white/30"
@@ -208,14 +214,14 @@ function embers() {
             </div>
 
             <div>
-              <label for="f-email" class="sr-only">Email address</label>
+              <label for="f-email" class="sr-only">{{ t.contact.emailLabel }}</label>
               <input
                 id="f-email"
                 v-model="form.email"
                 name="email"
                 type="email"
                 autocomplete="email"
-                placeholder="you@company.com"
+                :placeholder="t.contact.emailPlaceholder"
                 :aria-invalid="!!showError('email')"
                 aria-describedby="e-email"
                 class="w-full border-l-2 bg-transparent py-2 pl-4 text-base text-white outline-none transition-colors placeholder:text-white/30"
@@ -228,13 +234,13 @@ function embers() {
             </div>
 
             <div>
-              <label for="f-message" class="sr-only">Project details</label>
+              <label for="f-message" class="sr-only">{{ t.contact.messageLabel }}</label>
               <textarea
                 id="f-message"
                 v-model="form.message"
                 name="message"
                 rows="4"
-                placeholder="Tell us about your project, timeline, and goals..."
+                :placeholder="t.contact.messagePlaceholder"
                 :aria-invalid="!!showError('message')"
                 aria-describedby="e-message"
                 class="w-full resize-none border-l-2 bg-transparent py-2 pl-4 text-base leading-relaxed text-white outline-none transition-colors placeholder:text-white/30"
@@ -265,7 +271,7 @@ function embers() {
                 </svg>
               </span>
               <span>
-                I accept the <span class="text-accent">Fundere Project Inquiry Terms</span>
+                {{ t.contact.termsPrefix }} <span class="text-accent">{{ t.contact.termsLink }}</span>
               </span>
             </label>
             <p v-if="showError('accepted')" class="mt-1.5 pl-7 text-xs text-red-400" role="alert">
@@ -288,9 +294,9 @@ function embers() {
             >
               <span v-if="status === 'sending'" class="inline-flex items-center gap-2">
                 <span class="size-3.5 animate-spin rounded-full border-2 border-black/30 border-t-black" />
-                Sending
+                {{ t.contact.buttonSending }}
               </span>
-              <span v-else>Send message</span>
+              <span v-else>{{ t.contact.buttonIdle }}</span>
             </button>
             <canvas
               ref="burst"
