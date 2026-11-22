@@ -1,11 +1,6 @@
 <script setup lang="ts">
-const links = [
-  { label: 'Home', href: '#home' },
-  { label: 'Solutions', href: '#solutions' },
-  { label: 'Cases', href: '#cases' },
-  { label: 'About Us', href: '#about' },
-  { label: 'Contact', href: '#contact' },
-]
+const { t } = useI18n()
+const links = computed(() => t.value.nav.links)
 
 const showTop = ref(false)
 
@@ -35,14 +30,16 @@ onMounted(() => {
           {{ l.label }}
         </a>
       </nav>
-      <p class="font-display text-xs text-white/40">© {{ new Date().getFullYear() }} Fundere. All rights reserved.</p>
+      <p class="font-display text-xs text-white/40">
+        {{ t.footer.rights.replace('{year}', String(new Date().getFullYear())) }}
+      </p>
     </div>
 
     <!-- Heartbeat-inspired persistent back-to-top button with Fundere's magnetic accent style -->
     <a
       v-magnetic
       href="#home"
-      aria-label="Back to top"
+      :aria-label="t.footer.backToTop"
       class="fixed bottom-6 right-6 z-30 flex size-11 items-center justify-center rounded-lg bg-accent text-black shadow-lg transition-opacity duration-300"
       :class="showTop ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'"
     >

@@ -2,6 +2,7 @@
 import { animate } from '#nanime/utils'
 import type { Project } from '~/data/projects'
 
+const { t } = useI18n()
 const props = defineProps<{ project: Project | null; origin: DOMRect | null }>()
 const emit = defineEmits<{ close: [] }>()
 
@@ -71,7 +72,7 @@ onBeforeUnmount(() => {
             <h3 id="project-title" class="font-serif text-3xl font-semibold">{{ project.title }}</h3>
             <p class="text-white/70">{{ project.tagline }}</p>
             <p class="rounded-lg border border-line px-4 py-3 text-sm text-white/90">
-              <strong class="text-accent">Result:</strong> {{ project.result }}
+              <strong class="text-accent">{{ t.cases.modal.resultLabel }}</strong> {{ project.result }}
             </p>
             <ul class="flex flex-wrap gap-2" aria-label="Stack">
               <li v-for="s in project.stack" :key="s" class="rounded-full border border-line px-3 py-1 font-display text-xs text-white/70">
@@ -85,7 +86,7 @@ onBeforeUnmount(() => {
                 class="inline-block rounded-lg bg-accent px-5 py-2.5 text-sm font-medium text-black"
                 @click="emit('close')"
               >
-                Build something similar
+                {{ t.cases.modal.buildSimilar }}
               </a>
               <button
                 ref="closeBtn"
@@ -93,7 +94,7 @@ onBeforeUnmount(() => {
                 class="rounded-lg border border-line px-4 py-2.5 text-sm text-white/80 transition-colors hover:border-white/40 hover:text-white"
                 @click="emit('close')"
               >
-                Close
+                {{ t.cases.modal.close }}
               </button>
             </div>
           </div>
