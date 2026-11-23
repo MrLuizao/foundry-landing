@@ -63,6 +63,17 @@ function tokenClass(wordId?: number) {
   return 'text-white/[0.06]'
 }
 
+function logoClass(wordId?: number) {
+  if (wordId === undefined) return 'text-white/[0.06]'
+  if (wordId === primaryId.value) return 'text-white/95 drop-shadow-[0_0_16px_rgb(255_255_255/0.25)]'
+  if (wordId === secondaryId.value) {
+    return step.value % secondaryColors.length === 0
+      ? 'text-accent drop-shadow-[0_0_20px_rgb(255_122_26/0.35)]'
+      : 'text-accent/70'
+  }
+  return 'text-white/[0.06]'
+}
+
 onMounted(() => {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
   const timer = setInterval(() => {
@@ -85,21 +96,21 @@ function onMove(e: PointerEvent) {
   <section
     id="about"
     ref="section"
-    class="about-stage relative overflow-x-clip border-t border-line px-4 py-20 sm:px-6 md:py-24"
+    class="about-stage relative overflow-x-clip border-t border-line px-4 py-14 sm:px-6 md:py-16"
     @pointermove="onMove"
   >
     <HeroEmbers />
 
-    <div ref="track" class="relative z-10 mx-auto max-w-6xl md:h-[220vh]">
+    <div ref="track" class="relative z-10 mx-auto max-w-7xl md:h-[170vh]">
       <div
         ref="stage"
-        class="grid items-center gap-10 md:sticky md:top-28 md:grid-cols-12 md:gap-12"
+        class="grid items-center gap-10 md:sticky md:top-28 md:grid-cols-12 md:gap-10"
         style="--p: 0"
       >
-        <!-- Left: Open-canvas typographic FUNDERE watermark (no dots, no tilt) -->
+        <!-- Left: Open-canvas typographic FUNDERE watermark -->
         <div
           aria-hidden="true"
-          class="watermark-mask relative overflow-hidden py-4 select-none md:col-span-6 md:py-8"
+          class="watermark-mask relative overflow-hidden py-4 select-none md:col-span-7 md:py-8 lg:col-span-8"
         >
           <div class="flex flex-col gap-1.5 font-display text-[clamp(2.5rem,5.2vw,4.5rem)] font-bold italic uppercase leading-[0.92] tracking-tight">
             <div
@@ -111,26 +122,35 @@ function onMove(e: PointerEvent) {
               <span
                 v-for="(tok, tIdx) in row.tokens"
                 :key="tIdx"
-                class="transition-all duration-700 ease-out"
-                :class="tokenClass(tok.wordId)"
-              >{{ tok.text }}</span>
+                class="inline-flex items-center gap-2.5"
+              >
+                <BrandLogo
+                  v-if="tok.wordId !== undefined"
+                  class="size-[0.72em] shrink-0 transition-all duration-700 ease-out"
+                  :class="logoClass(tok.wordId)"
+                />
+                <span
+                  class="transition-all duration-700 ease-out"
+                  :class="tokenClass(tok.wordId)"
+                >{{ tok.text }}</span>
+              </span>
             </div>
           </div>
         </div>
 
-        <!-- Right: Large sequential scroll-driven story beats -->
-        <div class="flex flex-col items-start md:col-span-6">
-          <div class="relative w-full space-y-8 md:min-h-[260px] md:space-y-0">
+        <!-- Right: Large sequential scroll-driven story beats (CSS Grid overlap prevents clipping/overlap at any width) -->
+        <div class="flex flex-col items-end md:col-span-5 lg:col-span-4">
+          <div class="grid w-full gap-y-8 md:gap-y-0">
             <div
               v-for="(para, idx) in t.manifesto.paragraphs"
               :key="idx"
-              class="story-beat md:absolute md:inset-x-0 md:top-0"
+              class="story-beat md:col-start-1 md:row-start-1 md:self-center"
               :class="[
                 `story-beat-${idx + 1}`,
                 idx === 2 && progress >= 0.58 ? 'md:pointer-events-auto' : 'md:pointer-events-none',
               ]"
             >
-              <p class="font-display text-lg leading-snug text-white/85 sm:text-xl md:text-[1.65rem]">
+              <p class="text-right font-display text-lg leading-snug text-white/85 sm:text-xl lg:text-[1.4rem] xl:text-2xl">
                 <span
                   v-for="(seg, sIdx) in para"
                   :key="sIdx"
@@ -141,8 +161,8 @@ function onMove(e: PointerEvent) {
             </div>
           </div>
 
-          <!-- Subtle 3-beat progress indicator on desktop -->
-          <div class="mt-8 hidden w-36 grid-cols-3 gap-2 md:grid" aria-hidden="true">
+          <!-- Subtle 3-beat progress indicator aligned bottom-right on desktop -->
+          <div class="mt-6 hidden w-36 grid-cols-3 gap-2 self-end md:grid" aria-hidden="true">
             <span class="h-0.5 rounded-full transition-colors duration-300" :class="progress < 0.34 ? 'bg-accent' : 'bg-white/15'" />
             <span class="h-0.5 rounded-full transition-colors duration-300" :class="progress >= 0.34 && progress < 0.68 ? 'bg-accent' : 'bg-white/15'" />
             <span class="h-0.5 rounded-full transition-colors duration-300" :class="progress >= 0.68 ? 'bg-accent' : 'bg-white/15'" />

@@ -1,6 +1,6 @@
 export default {
   meta: {
-    title: 'Fundere — Software Studio',
+    title: 'Fundere • Software Studio',
     description: 'Fundere is a software studio that forges raw ideas into solid, production-ready products.',
   },
   nav: {
@@ -62,7 +62,7 @@ export default {
         summary: 'We engineer your core logic, databases, and cloud integrations so every system stays fast, connected, and always on.',
         points: [
           { title: 'System Integrations', body: 'Connect your platform with payment gateways, CRMs, ERPs, and third-party APIs in one seamless flow.' },
-          { title: 'Cloud Scalability', body: 'Infrastructure built to handle traffic spikes and grow with you—no rewrites required.' },
+          { title: 'Cloud Scalability', body: 'Infrastructure built to handle traffic spikes and grow with you, with no rewrites required.' },
           { title: 'Clean, Reliable Data', body: 'Centralized records, automated backups, and high availability for total peace of mind.' },
         ],
       },
@@ -105,7 +105,7 @@ export default {
         scope: 'Web & Apps · Backend & Cloud',
         title: 'Live B2B Operations Portal',
         tagline: 'Orders, inventory, billing, and account tracking unified in one fast platform.',
-        result: 'End-to-end commercial operations—zero spreadsheets.',
+        result: 'End-to-end commercial operations, zero spreadsheets.',
         stack: ['B2B Portal', 'Integrations', 'Cloud'],
         variant: 3,
         image: '/images/cases/b2b.jpg',

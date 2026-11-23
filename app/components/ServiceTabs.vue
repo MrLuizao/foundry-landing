@@ -10,12 +10,15 @@ const industries = computed(() => t.value.solutions.areas)
 const section = ref<HTMLElement | null>(null)
 const track = ref<HTMLElement | null>(null)
 const stage = ref<HTMLElement | null>(null)
+const introRef = ref<HTMLElement | null>(null)
 const panelRef = ref<HTMLElement | null>(null)
 const activeId = ref<IndustryId>('ai')
 const current = computed(() => industries.value.find(a => a.id === activeId.value) || industries.value[0]!)
 const tabs = ref<HTMLElement[]>([])
 
-// Scrubs --p (0 → 1) while scrolling through the sticky track; fully reversible on scroll-up.
+// Enter progress reveals the 3 lines + description naturally as the section enters the viewport.
+useScrollProgress(track, { mode: 'enter', target: introRef, enterSpan: 0.9, smooth: true })
+// Sticky progress handles the handoff from editorial intro to the open-canvas showcase.
 const { progress } = useScrollProgress(track, { mode: 'sticky', target: stage, smooth: false })
 
 function selectIndustry(id: string) {
@@ -73,13 +76,13 @@ function onMove(e: PointerEvent) {
   <section
     id="solutions"
     ref="section"
-    class="solutions-section relative overflow-x-clip border-t border-line px-4 py-16 sm:px-6 md:py-20"
+    class="solutions-section relative overflow-x-clip border-t border-line px-4 pt-10 pb-16 sm:px-6 md:pt-12 md:pb-20"
     @pointermove="onMove"
   >
     <div class="mx-auto max-w-5xl">
       <!-- On mobile (< md): editorial header followed by open-canvas showcase.
-           On desktop (md+): lines reveal 1 by 1, description slides in from the side, then opposing halves lock together. -->
-      <div ref="track" class="relative md:h-[195vh]">
+           On desktop (md+): lines reveal 1 by 1 on enter, then opposing halves lock together on sticky scroll. -->
+      <div ref="track" class="relative md:h-[175vh]">
         <div
           ref="stage"
           class="solutions-stage md:sticky md:top-24"
@@ -88,31 +91,33 @@ function onMove(e: PointerEvent) {
           <div class="relative">
             <!-- Editorial header -->
             <div
-              class="editorial-intro mb-14 flex flex-col items-start md:absolute md:inset-x-0 md:top-8 md:mb-0"
-              :class="progress < 0.58 ? 'md:pointer-events-auto' : 'md:pointer-events-none'"
+              class="editorial-intro mb-14 md:absolute md:inset-x-0 md:top-8 md:mb-0"
+              :class="progress < 0.34 ? 'md:pointer-events-auto' : 'md:pointer-events-none'"
             >
-              <h2 class="origin-left font-display font-bold uppercase leading-[0.94] tracking-tight text-white">
-                <span class="editorial-line-1 block whitespace-nowrap text-[clamp(1.5rem,5.5vw,3.75rem)] text-white/75">
-                  {{ t.solutions.line1 }}
-                </span>
-                <span class="editorial-line-2 mt-1 block whitespace-nowrap text-[clamp(2.25rem,8.5vw,5.75rem)] text-white/90">
-                  {{ t.solutions.line2 }}
-                </span>
-                <span class="editorial-line-3 mt-1 block whitespace-nowrap text-[clamp(3rem,12vw,8rem)] text-white">
-                  {{ t.solutions.line3 }}
-                </span>
-              </h2>
-              <div class="editorial-desc mt-8 max-w-2xl">
-                <p class="font-display text-base leading-relaxed text-white/75 sm:text-xl md:text-2xl">
-                  {{ t.solutions.subcopy }}
-                </p>
+              <div ref="introRef" class="flex flex-col items-start" style="--p: 0">
+                <h2 class="origin-left font-display font-bold uppercase leading-[0.94] tracking-tight text-white">
+                  <span class="editorial-line-1 block whitespace-nowrap text-[clamp(1.35rem,5.2vw,3.75rem)] text-white/75">
+                    {{ t.solutions.line1 }}
+                  </span>
+                  <span class="editorial-line-2 mt-1 block whitespace-nowrap text-[clamp(1.65rem,7.2vw,5.75rem)] text-white/90">
+                    {{ t.solutions.line2 }}
+                  </span>
+                  <span class="editorial-line-3 mt-1 block whitespace-nowrap text-[clamp(2.4rem,11vw,8rem)] text-white">
+                    {{ t.solutions.line3 }}
+                  </span>
+                </h2>
+                <div class="editorial-desc mt-8 max-w-2xl">
+                  <p class="font-display text-base leading-relaxed text-white/75 sm:text-xl md:text-2xl">
+                    {{ t.solutions.subcopy }}
+                  </p>
+                </div>
               </div>
             </div>
 
             <!-- Open-canvas architectural showcase -->
             <div
               class="solutions-showcase"
-              :class="progress >= 0.56 ? 'md:pointer-events-auto' : 'md:pointer-events-none'"
+              :class="progress >= 0.30 ? 'md:pointer-events-auto' : 'md:pointer-events-none'"
             >
               <!-- Clean architectural index bar -->
               <div
@@ -208,74 +213,80 @@ function onMove(e: PointerEvent) {
     radial-gradient(640px circle at var(--hx, 50%) var(--hy, 50%), rgb(255 122 26 / 0.08), transparent 70%);
 }
 
-/* Desktop (md+): 1-by-1 line reveal → side slide-in description → intro out → opposing halves lock in */
+/* Desktop (md+): 1-by-1 line reveal on enter → intro out → opposing halves lock in on sticky scroll */
 @media (min-width: 768px) {
   .editorial-line-1 {
-    --l1: clamp(0, calc(var(--p) / 0.08), 1);
-    opacity: calc(0.25 + 0.75 * var(--l1));
-    transform: translate3d(0, calc((1 - var(--l1)) * 0.75rem), 0);
+    --l1: clamp(0, calc(var(--p) / 0.30), 1);
+    opacity: calc(0.45 + 0.55 * var(--l1));
+    transform: translate3d(calc((1 - var(--l1)) * 4rem), 0, 0);
     will-change: transform, opacity;
   }
 
   .editorial-line-2 {
-    --l2: clamp(0, calc((var(--p) - 0.06) / 0.10), 1);
+    --l2: clamp(0, calc((var(--p) - 0.18) / 0.30), 1);
     opacity: var(--l2);
-    transform: translate3d(0, calc((1 - var(--l2)) * 1rem), 0);
+    transform: translate3d(calc((1 - var(--l2)) * 4.5rem), 0, 0);
     will-change: transform, opacity;
   }
 
   .editorial-line-3 {
-    --l3: clamp(0, calc((var(--p) - 0.14) / 0.11), 1);
+    --l3: clamp(0, calc((var(--p) - 0.38) / 0.30), 1);
     opacity: var(--l3);
-    transform: translate3d(0, calc((1 - var(--l3)) * 1.25rem), 0);
+    transform: translate3d(calc((1 - var(--l3)) * 5rem), 0, 0);
     will-change: transform, opacity;
   }
 
   .editorial-desc {
-    --desc-in: clamp(0, calc((var(--p) - 0.23) / 0.15), 1);
+    --desc-in: clamp(0, calc((var(--p) - 0.56) / 0.34), 1);
     opacity: var(--desc-in);
-    transform: translate3d(calc((1 - var(--desc-in)) * 4.5rem), 0, 0);
+    transform: translate3d(0, calc((1 - var(--desc-in)) * 2rem), 0);
     filter: blur(calc((1 - var(--desc-in)) * 6px));
     will-change: transform, opacity, filter;
   }
 
   .editorial-intro {
-    --intro-out: clamp(0, calc((var(--p) - 0.45) / 0.13), 1);
+    --intro-out: clamp(0, calc((var(--p) - 0.14) / 0.20), 1);
     opacity: calc(1 - var(--intro-out));
     transform: translate3d(0, calc(var(--intro-out) * -2rem), 0);
     will-change: transform, opacity;
   }
 
+  .solutions-showcase {
+    --show-in: clamp(0, calc((var(--p) - 0.24) / 0.16), 1);
+    opacity: var(--show-in);
+    will-change: opacity;
+  }
+
   .showcase-bar {
-    --bar-in: clamp(0, calc((var(--p) - 0.54) / 0.18), 1);
+    --bar-in: clamp(0, calc((var(--p) - 0.26) / 0.24), 1);
     opacity: var(--bar-in);
     clip-path: inset(0 calc((1 - var(--bar-in)) * 100%) 0 0);
     will-change: clip-path, opacity;
   }
 
   .showcase-pitch {
-    --pitch-in: clamp(0, calc((var(--p) - 0.58) / 0.20), 1);
+    --pitch-in: clamp(0, calc((var(--p) - 0.32) / 0.28), 1);
     opacity: var(--pitch-in);
     transform: translate3d(calc((1 - var(--pitch-in)) * -2.5rem), 0, 0);
     will-change: transform, opacity;
   }
 
   .showcase-point:nth-child(1) {
-    --pt-in: clamp(0, calc((var(--p) - 0.62) / 0.18), 1);
+    --pt-in: clamp(0, calc((var(--p) - 0.38) / 0.26), 1);
     opacity: var(--pt-in);
     transform: translate3d(calc((1 - var(--pt-in)) * 3rem), 0, 0);
     will-change: transform, opacity;
   }
 
   .showcase-point:nth-child(2) {
-    --pt-in: clamp(0, calc((var(--p) - 0.69) / 0.18), 1);
+    --pt-in: clamp(0, calc((var(--p) - 0.50) / 0.26), 1);
     opacity: var(--pt-in);
     transform: translate3d(calc((1 - var(--pt-in)) * 3rem), 0, 0);
     will-change: transform, opacity;
   }
 
   .showcase-point:nth-child(3) {
-    --pt-in: clamp(0, calc((var(--p) - 0.76) / 0.18), 1);
+    --pt-in: clamp(0, calc((var(--p) - 0.62) / 0.28), 1);
     opacity: var(--pt-in);
     transform: translate3d(calc((1 - var(--pt-in)) * 3rem), 0, 0);
     will-change: transform, opacity;

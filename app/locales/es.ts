@@ -1,6 +1,6 @@
 export default {
   meta: {
-    title: 'Fundere — Software Studio',
+    title: 'Fundere • Software Studio',
     description: 'Fundere es un estudio de software que transforma ideas en bruto en productos sólidos y listos para producción.',
   },
   nav: {

@@ -39,6 +39,7 @@ onMounted(() => {
 
 <template>
   <div v-if="visible" ref="root" class="preloader fixed inset-0 z-[90] flex flex-col items-center justify-center bg-ink" aria-hidden="true">
+    <BrandLogo class="mb-6 size-20 text-white sm:size-28" />
     <div ref="letters" class="flex font-display text-4xl tracking-[0.3em] text-accent sm:text-6xl">
       <span v-for="(c, i) in 'FUNDERE'.split('')" :key="i" class="inline-block">{{ c }}</span>
     </div>

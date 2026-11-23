@@ -53,7 +53,7 @@ function open(p: Project, e: Event) {
           v-for="(p, i) in projects"
           :key="p.slug"
           type="button"
-          class="group text-left focus-visible:outline-none"
+          class="group block w-full text-left focus-visible:outline-none"
           :class="i === 0 ? 'md:col-span-2' : ''"
           :aria-label="t.cases.cardAria.replace('{title}', p.title)"
           @click="open(p, $event)"
@@ -61,7 +61,7 @@ function open(p: Project, e: Event) {
           <div
             v-tilt
             :data-cursor="t.cases.cursorView"
-            class="relative overflow-hidden rounded-card border border-line bg-panel transition-transform duration-300 active:scale-[0.99]"
+            class="relative w-full overflow-hidden rounded-card border border-line bg-panel transition-transform duration-300 active:scale-[0.99]"
             :class="i === 0 ? 'aspect-[16/10] md:aspect-[21/9]' : 'aspect-[4/3]'"
           >
             <ArtCard

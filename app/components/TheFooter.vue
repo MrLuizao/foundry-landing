@@ -17,8 +17,9 @@ onMounted(() => {
 <template>
   <footer class="border-t border-line px-6 py-12">
     <div class="mx-auto flex max-w-5xl flex-col items-start justify-between gap-6 sm:flex-row sm:items-center">
-      <a href="#home" class="font-display text-sm text-white/70 transition-colors hover:text-white">
-        <span class="text-accent">FUNDERE</span> Software Studio
+      <a href="#home" class="group flex items-center gap-2 font-display text-sm text-white/70 transition-colors hover:text-white">
+        <BrandLogo class="size-4 shrink-0 text-accent transition-transform duration-300 group-hover:scale-105" />
+        <span><span class="font-medium text-white">FUNDERE</span> Software Studio</span>
       </a>
       <nav aria-label="Footer" class="flex flex-wrap items-center gap-x-6 gap-y-2">
         <a
@@ -35,16 +36,24 @@ onMounted(() => {
       </p>
     </div>
 
-    <!-- Heartbeat-inspired persistent back-to-top button with Fundere's magnetic accent style -->
+    <!-- Persistent back-to-top button showcasing the Fundere mark, morphing to an upward arrow on hover -->
     <a
       v-magnetic
       href="#home"
       :aria-label="t.footer.backToTop"
-      class="fixed bottom-6 right-6 z-30 flex size-11 items-center justify-center rounded-lg bg-accent text-black shadow-lg transition-opacity duration-300"
+      class="group fixed bottom-6 right-6 z-30 flex size-12 items-center justify-center overflow-hidden rounded-xl border border-line bg-panel/90 shadow-lg backdrop-blur transition-all duration-300 hover:border-accent hover:bg-accent hover:shadow-[0_0_24px_rgb(255_122_26/0.4)]"
       :class="showTop ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'"
     >
-      <svg viewBox="0 0 16 16" class="size-4" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M8 12.5V3.5M4 7.5 8 3.5l4 4" stroke-linecap="round" stroke-linejoin="round" />
+      <BrandLogo
+        class="size-5 text-accent transition-all duration-300 ease-out group-hover:-translate-y-3 group-hover:opacity-0"
+      />
+      <svg
+        viewBox="0 0 24 24"
+        class="absolute size-5 translate-y-3 text-black opacity-0 transition-all duration-300 ease-out group-hover:translate-y-0 group-hover:opacity-100"
+        fill="currentColor"
+        aria-hidden="true"
+      >
+        <path d="M6.5 17.25V13.25L12 6.75L17.5 13.25V17.25L12 10.75L6.5 17.25Z" />
       </svg>
     </a>
   </footer>

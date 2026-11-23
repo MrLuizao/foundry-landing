@@ -4,16 +4,18 @@ import { stagger } from '#nanime/utils'
 const { t } = useI18n()
 const ready = useState('fundere-ready', () => false)
 const stage = ref<HTMLElement | null>(null)
-const heading = ref<HTMLElement | null>(null)
+const line1 = ref<HTMLElement | null>(null)
+const line2 = ref<HTMLElement | null>(null)
 const subcopy = ref<HTMLElement | null>(null)
 const subline = ref<HTMLElement | null>(null)
 
-// One orchestrated page-load moment: monumental headline reveals char-by-char, followed by studio tag & word-by-word statement.
-const { chars } = useSplitText(heading, { chars: true })
+// Monumental headline scrambles into place like ScrambleHeading, followed by studio tag & word-by-word statement.
+const scramble1 = useScrambleText(line1, { autoplay: false }, () => ({ text: t.value.hero.titleLine1, duration: 750 }))
+const scramble2 = useScrambleText(line2, { autoplay: false }, () => ({ text: t.value.hero.titleLine2, duration: 900 }))
+
 const { words } = useSplitText(subline, { words: true })
 const intro = useAnimeTimeline({ autoplay: false })
 intro
-  .add(chars, { opacity: [0, 1], y: ['0.35em', 0], duration: 550, delay: stagger(32), ease: 'outCubic' }, 0)
   .add(() => (subcopy.value ? [subcopy.value] : []), {
     opacity: [0, 1],
     y: ['0.75rem', 0],
@@ -29,7 +31,20 @@ intro
     ease: 'outExpo',
   }, 420)
 
-watch(ready, (r) => { if (r) intro.play() }, { immediate: true })
+watch(ready, (r) => {
+  if (!r) return
+  scramble1.restart()
+  scramble2.restart()
+  intro.play()
+}, { immediate: true })
+
+watch([() => t.value.hero.titleLine1, () => t.value.hero.titleLine2], async () => {
+  await nextTick()
+  if (ready.value) {
+    scramble1.restart()
+    scramble2.restart()
+  }
+})
 
 // Scroll parallax (0 → 1 as hero exits the viewport)
 onMounted(() => {
@@ -85,8 +100,9 @@ function onLeave() {
       <!-- Layer 1: Monumental title (strongest scroll + pointer parallax) -->
       <div class="parallax-title-scroll">
         <div class="parallax-title-pointer">
-          <h1 ref="heading" :aria-label="t.hero.ariaLabel" class="hero-title font-display font-normal text-white">
-            {{ t.hero.titleLine1 }}<br>{{ t.hero.titleLine2 }}
+          <h1 :aria-label="t.hero.ariaLabel" class="hero-title font-display font-bold text-white">
+            <span ref="line1" class="block">{{ t.hero.titleLine1 }}</span>
+            <span ref="line2" class="block">{{ t.hero.titleLine2 }}</span>
           </h1>
         </div>
       </div>
@@ -94,9 +110,10 @@ function onLeave() {
       <!-- Layer 2: Subtitle (medium parallax depth) -->
       <div class="parallax-sub-scroll">
         <div class="parallax-sub-pointer mt-14 flex max-w-5xl flex-col items-center gap-4 sm:mt-16">
-          <p ref="subcopy" class="font-display text-[clamp(1.1rem,3.8vw,3.5rem)] font-bold uppercase leading-none tracking-tight text-white/80 sm:whitespace-nowrap">
+          <p ref="subcopy" class="inline-flex flex-wrap items-center justify-center font-display text-[clamp(1.1rem,3.8vw,3.5rem)] font-bold uppercase leading-none tracking-tight text-white/80 sm:flex-nowrap sm:whitespace-nowrap">
+            <BrandLogo class="mr-3 size-[1.2em] shrink-0 text-white" />
             <span class="text-accent">FUNDERE</span>
-            <span class="mx-2 text-white/40">-</span>
+            <span class="mx-3 inline-block size-[0.2em] shrink-0 rounded-full bg-white/45" aria-hidden="true" />
             <strong class="font-bold text-white">{{ t.hero.studio }}.</strong>
           </p>
           <p ref="subline" class="max-w-4xl font-display text-lg font-medium leading-snug tracking-tight text-white/85 sm:text-xl md:text-2xl">

@@ -39,6 +39,24 @@ const status = ref<'idle' | 'sending' | 'sent' | 'error'>('idle')
 const serverError = ref('')
 const root = ref<HTMLElement | null>(null)
 const burst = ref<HTMLCanvasElement | null>(null)
+const copied = ref(false)
+const EMAIL = 'hello@fundere.software'
+
+useScrollProgress(root, { mode: 'enter', enterSpan: 0.9, smooth: true })
+
+async function copyEmail() {
+  await navigator.clipboard?.writeText(EMAIL)
+  copied.value = true
+  setTimeout(() => { copied.value = false }, 1800)
+}
+
+function onMove(e: PointerEvent) {
+  const s = root.value
+  if (!s) return
+  const r = s.getBoundingClientRect()
+  s.style.setProperty('--hx', `${e.clientX - r.left}px`)
+  s.style.setProperty('--hy', `${e.clientY - r.top}px`)
+}
 
 const errors = computed(() => {
   const r = schema.value.safeParse(form)
@@ -131,21 +149,52 @@ function embers() {
 </script>
 
 <template>
-  <section id="contact" ref="root" class="px-6 py-28">
-    <div class="mx-auto max-w-2xl">
-      <ScrambleHeading :text="t.contact.heading" class="font-display text-4xl sm:text-5xl" />
-      <p class="mt-4 text-white/60">
-        {{ t.contact.subcopy }}
-      </p>
+  <section
+    id="contact"
+    ref="root"
+    class="contact-section relative overflow-x-clip border-t border-line px-4 py-24 sm:px-6 md:py-28"
+    style="--p: 0"
+    @pointermove="onMove"
+  >
+    <div class="mx-auto grid max-w-5xl gap-12 md:grid-cols-12 md:gap-14">
+      <!-- Left column: Editorial heading & direct studio contact -->
+      <div class="flex flex-col justify-between md:col-span-5">
+        <div>
+          <ScrambleHeading
+            :text="t.contact.heading"
+            class="font-display text-3xl font-bold uppercase leading-[0.98] tracking-tight text-white sm:text-5xl"
+          />
+          <p class="contact-subcopy mt-5 font-display text-sm leading-relaxed text-white/65 sm:text-base">
+            {{ t.contact.subcopy }}
+          </p>
+        </div>
 
-      <div class="relative mt-10 rounded-card border border-line bg-panel p-6 sm:p-10">
+        <div class="mt-10 border-t border-line pt-6 font-display text-xs">
+          <button
+            type="button"
+            class="group inline-flex items-center gap-2.5 text-white/70 transition-colors hover:text-accent"
+            @click="copyEmail"
+          >
+            <span class="size-1.5 rounded-full bg-accent" aria-hidden="true" />
+            <span>{{ EMAIL }}</span>
+            <span
+              class="rounded border border-line px-2 py-0.5 text-[10px] text-white/45 transition-colors group-hover:border-accent/40 group-hover:text-accent"
+            >
+              {{ copied ? t.palette.copied : 'Copy' }}
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Right column: Open-canvas architectural form -->
+      <div class="border-t border-line pt-8 md:col-span-7 md:border-t-0 md:pt-0">
         <!-- Sent confirmation state -->
-        <div v-if="status === 'sent'" class="py-10" role="status">
-          <span class="inline-flex size-10 items-center justify-center rounded-lg border border-accent/40 bg-accent/10 text-sm text-accent">
+        <div v-if="status === 'sent'" class="border-l-2 border-accent py-4 pl-6" role="status">
+          <span class="inline-flex size-9 items-center justify-center rounded-lg border border-accent/40 bg-accent/10 text-sm text-accent">
             ✓
           </span>
-          <h3 class="mt-5 font-display text-2xl text-white">{{ t.contact.successTitle }}</h3>
-          <p class="mt-2 max-w-sm text-sm leading-relaxed text-white/60">
+          <h3 class="mt-5 font-display text-2xl font-semibold text-white">{{ t.contact.successTitle }}</h3>
+          <p class="mt-2 max-w-md text-sm leading-relaxed text-white/65">
             {{ t.contact.successMessage }}
           </p>
           <button
@@ -158,18 +207,18 @@ function embers() {
           </button>
         </div>
 
-        <!-- Single-step form -->
+        <!-- Single-step architectural form -->
         <form v-else class="space-y-8" novalidate @submit.prevent="submit">
           <fieldset>
-            <legend class="text-xs font-medium tracking-wide text-white/50">
+            <legend class="font-display text-[11px] tracking-[0.18em] text-white/45 uppercase">
               {{ t.contact.audienceLegend }}
             </legend>
-            <div class="mt-3.5 flex flex-col gap-3 sm:flex-row sm:gap-8">
+            <div class="mt-3.5 grid gap-3 sm:grid-cols-2">
               <label
                 v-for="opt in audienceOptions"
                 :key="opt"
-                class="flex cursor-pointer items-center gap-3 text-sm transition-colors"
-                :class="form.projectFor === opt ? 'text-white' : 'text-white/50 hover:text-white/80'"
+                class="flex cursor-pointer items-center gap-3 rounded-lg border px-4 py-3 font-display text-xs transition-colors sm:text-sm"
+                :class="form.projectFor === opt ? 'border-accent bg-accent/10 text-white' : 'border-line text-white/55 hover:border-white/25 hover:text-white/85'"
               >
                 <input
                   v-model="form.projectFor"
@@ -179,8 +228,8 @@ function embers() {
                   class="sr-only"
                 >
                 <span
-                  class="flex size-4 shrink-0 items-center justify-center rounded-full border transition-colors"
-                  :class="form.projectFor === opt ? 'border-accent' : 'border-white/25'"
+                  class="flex size-3.5 shrink-0 items-center justify-center rounded-full border transition-colors"
+                  :class="form.projectFor === opt ? 'border-accent' : 'border-white/30'"
                 >
                   <span
                     class="size-1.5 rounded-full bg-accent transition-transform duration-200"
@@ -192,9 +241,11 @@ function embers() {
             </div>
           </fieldset>
 
-          <div class="space-y-5">
+          <div class="space-y-6">
             <div>
-              <label for="f-name" class="sr-only">{{ t.contact.nameLabel }}</label>
+              <label for="f-name" class="mb-2 block font-display text-[11px] tracking-[0.18em] text-white/45 uppercase">
+                {{ t.contact.nameLabel }}
+              </label>
               <input
                 id="f-name"
                 v-model="form.name"
@@ -204,8 +255,8 @@ function embers() {
                 :placeholder="t.contact.namePlaceholder"
                 :aria-invalid="!!showError('name')"
                 aria-describedby="e-name"
-                class="w-full border-l-2 bg-transparent py-2 pl-4 text-base text-white outline-none transition-colors placeholder:text-white/30"
-                :class="showError('name') ? 'border-red-400' : form.name ? 'border-white' : 'border-white/25 focus:border-accent'"
+                class="w-full border-l-2 bg-transparent py-2.5 pl-4 font-display text-base text-white outline-none transition-colors placeholder:text-white/25"
+                :class="showError('name') ? 'border-red-400' : form.name ? 'border-white' : 'border-white/20 focus:border-accent'"
                 @blur="touched.name = true"
               >
               <p v-if="showError('name')" id="e-name" class="mt-1.5 pl-4 text-xs text-red-400" role="alert">
@@ -214,7 +265,9 @@ function embers() {
             </div>
 
             <div>
-              <label for="f-email" class="sr-only">{{ t.contact.emailLabel }}</label>
+              <label for="f-email" class="mb-2 block font-display text-[11px] tracking-[0.18em] text-white/45 uppercase">
+                {{ t.contact.emailLabel }}
+              </label>
               <input
                 id="f-email"
                 v-model="form.email"
@@ -224,8 +277,8 @@ function embers() {
                 :placeholder="t.contact.emailPlaceholder"
                 :aria-invalid="!!showError('email')"
                 aria-describedby="e-email"
-                class="w-full border-l-2 bg-transparent py-2 pl-4 text-base text-white outline-none transition-colors placeholder:text-white/30"
-                :class="showError('email') ? 'border-red-400' : form.email ? 'border-accent' : 'border-white/25 focus:border-accent'"
+                class="w-full border-l-2 bg-transparent py-2.5 pl-4 font-display text-base text-white outline-none transition-colors placeholder:text-white/25"
+                :class="showError('email') ? 'border-red-400' : form.email ? 'border-accent' : 'border-white/20 focus:border-accent'"
                 @blur="touched.email = true"
               >
               <p v-if="showError('email')" id="e-email" class="mt-1.5 pl-4 text-xs text-red-400" role="alert">
@@ -234,7 +287,9 @@ function embers() {
             </div>
 
             <div>
-              <label for="f-message" class="sr-only">{{ t.contact.messageLabel }}</label>
+              <label for="f-message" class="mb-2 block font-display text-[11px] tracking-[0.18em] text-white/45 uppercase">
+                {{ t.contact.messageLabel }}
+              </label>
               <textarea
                 id="f-message"
                 v-model="form.message"
@@ -243,8 +298,8 @@ function embers() {
                 :placeholder="t.contact.messagePlaceholder"
                 :aria-invalid="!!showError('message')"
                 aria-describedby="e-message"
-                class="w-full resize-none border-l-2 bg-transparent py-2 pl-4 text-base leading-relaxed text-white outline-none transition-colors placeholder:text-white/30"
-                :class="showError('message') ? 'border-red-400' : form.message ? 'border-accent' : 'border-white/25 focus:border-accent'"
+                class="w-full resize-none border-l-2 bg-transparent py-2.5 pl-4 font-display text-base leading-relaxed text-white outline-none transition-colors placeholder:text-white/25"
+                :class="showError('message') ? 'border-red-400' : form.message ? 'border-accent' : 'border-white/20 focus:border-accent'"
                 @blur="touched.message = true"
               />
               <p v-if="showError('message')" id="e-message" class="mt-1.5 pl-4 text-xs text-red-400" role="alert">
@@ -253,7 +308,7 @@ function embers() {
             </div>
           </div>
 
-          <div>
+          <div class="border-t border-line pt-6">
             <label class="flex cursor-pointer items-center gap-3 text-sm text-white/60">
               <input
                 v-model="form.accepted"
@@ -290,7 +345,7 @@ function embers() {
               v-magnetic
               type="submit"
               :disabled="status === 'sending'"
-              class="inline-flex min-w-40 items-center justify-center gap-2 rounded-lg bg-accent px-5 py-2.5 text-sm font-medium text-black disabled:opacity-70"
+              class="inline-flex min-w-44 items-center justify-center gap-2 rounded-lg bg-accent px-6 py-3 text-sm font-medium text-black disabled:opacity-70"
             >
               <span v-if="status === 'sending'" class="inline-flex items-center gap-2">
                 <span class="size-3.5 animate-spin rounded-full border-2 border-black/30 border-t-black" />
@@ -309,3 +364,26 @@ function embers() {
     </div>
   </section>
 </template>
+
+<style scoped>
+.contact-section {
+  background:
+    radial-gradient(640px circle at var(--hx, 50%) var(--hy, 50%), rgb(255 122 26 / 0.08), transparent 70%);
+}
+
+.contact-subcopy {
+  --sub-in: clamp(0, calc((var(--p) - 0.15) / 0.70), 1);
+  opacity: var(--sub-in);
+  transform: translate3d(calc((1 - var(--sub-in)) * 6rem), 0, 0);
+  filter: blur(calc((1 - var(--sub-in)) * 5px));
+  will-change: transform, opacity, filter;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .contact-subcopy {
+    transform: none !important;
+    filter: none !important;
+    opacity: 1 !important;
+  }
+}
+</style>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// Heading that scrambles into place the first time it scrolls into view.
+// Heading that scrambles into place whenever it scrolls into view.
 const props = defineProps<{ text: string; tag?: string }>()
 const el = ref<HTMLElement | null>(null)
 const hasPlayed = ref(false)
@@ -14,13 +14,18 @@ watch(() => props.text, async () => {
 })
 
 onMounted(() => {
+  let visible = false
   const io = new IntersectionObserver(([e]) => {
-    if (e?.isIntersecting) {
+    if (!e) return
+    if (e.isIntersecting && !visible) {
+      visible = true
       hasPlayed.value = true
       anim.restart()
-      io.disconnect()
     }
-  }, { threshold: 0.6 })
+    else if (!e.isIntersecting) {
+      visible = false
+    }
+  }, { threshold: 0.4, rootMargin: '0px 0px -15% 0px' })
   if (el.value) io.observe(el.value)
   onBeforeUnmount(() => io.disconnect())
 })

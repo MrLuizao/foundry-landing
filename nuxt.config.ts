@@ -17,7 +17,10 @@ export default defineNuxtConfig({
   app: {
     head: {
       htmlAttrs: { lang: 'en' },
-      title: 'Fundere — Software Studio',
+      title: 'Fundere • Software Studio',
+      link: [
+        { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
+      ],
       meta: [
         { name: 'description', content: 'Fundere is a software studio that forges raw ideas into solid, production-ready products.' },
       ],
