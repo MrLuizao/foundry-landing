@@ -147,7 +147,7 @@ export default {
   },
   contact: {
     heading: 'Cuéntanos qué quieres construir',
-    subcopy: 'Comparte algunos detalles y te responderemos en un máximo de dos días hábiles.',
+    subcopy: 'Comparte algunos detalles y te contactaremos a la brevedad.',
     audienceLegend: '¿Para quién es este proyecto?',
     audiences: [
       'Para mi propia empresa o donde trabajo',

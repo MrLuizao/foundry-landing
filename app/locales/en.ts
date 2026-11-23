@@ -147,7 +147,7 @@ export default {
   },
   contact: {
     heading: 'Tell us what to build',
-    subcopy: 'Share a few details and we will reply within two business days.',
+    subcopy: 'Share a few details and we will get back to you shortly.',
     audienceLegend: "Who's this project for?",
     audiences: [
       'A business I own or work for',
